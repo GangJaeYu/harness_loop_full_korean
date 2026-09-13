@@ -1,0 +1,9 @@
+# OS 생성 파일
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# 편집기
+.vscode/
+.idea/
+*.swp
