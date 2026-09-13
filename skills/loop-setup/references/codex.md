@@ -69,7 +69,10 @@ codex exec "<LOOP.md 의 반영 지시문>"
 
 **①-병렬**은 라운드마다 `codex exec "<코디네이터 지시문>"` 을 한 번 띄우고, `STATE.md` 의 `Assignments` 행마다 슬롯 트리를 작업 디렉터리로
 구현·검증 자식을 **백그라운드로 동시에** 띄워 전부 끝날 때까지 기다린다(셸이면 `&` 와 `wait`, PowerShell 이면 `Start-Process -Wait`).
-슬롯 2 이상은 `git worktree add ../<저장소>-slot-N -B slot-N main` 으로 코디네이터가 만든다. 코디네이터의 승인 범위는 `STATE.md`·`LOG.md`·태스크 문서 쓰기,
+슬롯 2 이상은 `git worktree add <8절 슬롯 경로> -B slot-N main` 으로 코디네이터가 만든다.
+슬롯 경로는 세팅 때 정한다 — 저장소 경로에 `OneDrive`·`Dropbox`·`iCloud`·`Google Drive` 가 들어 있으면 형제 폴더 대신 저장소 안 `.wt/slot-N`(`.gitignore` 추가)이나 동기화 밖 경로를 제안한다.
+격리 3이면 스크립트가 `e2e 대기`·검증 행을 슬롯 순서대로 돌리며 앱을 전환한다(`local-dev` 내리기 → 그 슬롯 트리에서 `local-dev` → e2e 명령 → 검증 자식).
+`DAG.md` 는 `harness_setup/scripts/dag-render.*` 로 만든다 — frontmatter 만 읽는 스크립트라 프로젝트 런타임으로 쓰고 셸에서 한 번 돌려 본다. 코디네이터의 승인 범위는 `STATE.md`·`LOG.md`·태스크 문서 쓰기,
 `local-dev`, `git add`·`commit`·`merge`·`worktree`·`checkout`, 결과 파일 삭제이고 코드 수정은 주지 않는다.
 구현 자식의 표준 출력은 `done-<ID>.txt` 로 받는다 — `TASK/STATUS/RETRY/LOG/END` 블록이고 `END` 가 없으면 중단된 것이다.
 슬롯 자식에게는 `plan_setup/`·`harness_setup/` 문서를 읽을 **주 트리 절대 경로**를 지시문에 넣는다 — 슬롯 트리의 문서는 낡았다.
@@ -106,7 +109,9 @@ heredoc 은 구분자를 따옴표로 감싼다(`<<'EOF'`) — 안 그러면 `$`
    A) 예 — 구간별 폭: (표). 동시 에이전트 수 상한을 골라 주세요: (폭 최댓값) / (절반) / 1. 폭보다 큰 수는 놉니다
       격리 방식: 1) 슬롯별 환경 통째 분리(자원 N벌, local-dev 가 슬롯 변수를 받아야 함) /
                  2) DB 하나 + 슬롯별 데이터베이스·계정(권한 발급 단계 추가) / 3) 공유 자원 게이트만 직렬화(되돌리기 비용 없음)
-      local-dev 가 슬롯 변수를 읽는지 확인한 결과: (읽음 / 안 읽음 — 어느 쪽이든 harness-update 가 먼저입니다)
+      local-dev 가 슬롯 변수를 읽는지 확인한 결과: (읽음 / 안 읽음 — 1·2 는 harness-update 가 먼저입니다. 3 은 병렬 이득이 unit 까지입니다)
+      슬롯 경로(저장소가 동기화 폴더 아래일 때만): 저장소 안 .wt/slot-N / 동기화 밖 경로
+      (오르카가 있으면) 에이전트 배치: 구현 (claude/codex), 검증 (claude/codex — 구현과 다르게 두면 분리가 강해집니다), 코디네이터 (claude/codex)
    B) 아니요, 단일 에이전트         → DAG·충돌 표는 그대로 만들고 슬롯·격리는 미결로 남깁니다
 
    (DAG 그림은 묻지 않고 LOOP.md 8절에 그려서 보고에서 검토를 요청합니다)

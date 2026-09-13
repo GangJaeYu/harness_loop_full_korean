@@ -26,7 +26,7 @@ IDEA → PRD → TRD → ARCHITECTURE → PLAN(phase·task) → HARNESS(게이�
 | 2 | `architecture-generator` | `docs/ARCHITECTURE/*.md` |
 | 3 | `plan-generator` | `plan_setup/PLAN.md`, `phase-NN/`, `STATE.md`, `LOG.md` |
 | 4 | `harness-setup`, `harness-update` | `harness_setup/quality_gates/`, `harness_setup/scripts/` |
-| 5 | `loop-setup`, `loop-update` | `loop_setup/LOOP.md` |
+| 5 | `loop-setup`, `loop-update` | `loop_setup/LOOP.md`, `loop_setup/DAG.md`(생성물) |
 
 ## 설치
 
@@ -47,7 +47,7 @@ codex plugin marketplace add GangJaeYu/harness_loop_full_korean
 codex plugin marketplace list
 ```
 
-브랜치나 태그를 고정하려면 `...@main` 또는 `...#v1.1.0` 을 붙입니다.
+브랜치나 태그를 고정하려면 `...@main` 또는 `...#v1.2.0` 을 붙입니다.
 
 설치 후에는 어느 프로젝트에서든 "PRD 만들어줘" 같은 말에 스킬이 걸립니다.
 
@@ -74,7 +74,7 @@ git submodule add https://github.com/GangJaeYu/harness_loop_full_korean .agent-s
 
 - **한 태스크에 한 세션.** 구현 → 검증 → 반영 세 토막이 각각 다른 세션이고, `task_validation` 은 **구현한 세션과 분리된 새 세션**
   (`claude -p` / `codex exec` 헤드리스 자식)에서 돕니다. 구현 중에 형성된 판단이 검증에 새지 않게 하기 위해서입니다
-- **기본은 병렬.** `plan_setup/` 의 태스크로 DAG 를 그리고(`LOOP.md` 8절, 머메이드), 자원 충돌을 사전 검사한 뒤,
+- **기본은 병렬.** `plan_setup/` 의 태스크로 DAG 를 스크립트로 그리고(`loop_setup/DAG.md`, 머메이드), 자원 충돌을 사전 검사한 뒤,
   코디네이터가 폭만큼 태스크를 배정합니다. 오르카가 있으면 오케스트레이션 워커, 없으면 스크립트가 슬롯마다 자식 세션을 띄웁니다
 - **워크트리는 태스크마다가 아니라 필요한 자리에만.** 동시에 코드를 쓰는 둘째 워커부터 슬롯 워크트리를 받고, 검증·비코드 태스크는 받지 않습니다
 - **재수정 사이클은 최대 3회.** 소진하면 기준을 낮추지 않고 사용자에게 보고하고 멈춥니다

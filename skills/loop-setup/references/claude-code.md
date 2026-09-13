@@ -80,7 +80,10 @@ Windows 에서 세션의 셸 도구 이름이 `Bash` 가 아니라 `PowerShell` 
 
 **①-병렬**은 라운드마다 `claude -p "<코디네이터 지시문>"` 을 한 번 띄우고, `STATE.md` 의 `Assignments` 행마다 슬롯 트리에서
 구현·검증 자식을 **백그라운드로 동시에** 띄워 전부 끝날 때까지 기다린다(PowerShell 이면 `Start-Process -Wait`/`Start-Job`, 셸이면 `&` 와 `wait`).
-슬롯 2 이상은 `git worktree add ../<저장소>-slot-N -B slot-N main` 으로 코디네이터가 만들고, 자식은 그 폴더를 작업 디렉터리로 받는다.
+슬롯 2 이상은 `git worktree add <8절 슬롯 경로> -B slot-N main` 으로 코디네이터가 만들고, 자식은 그 폴더를 작업 디렉터리로 받는다.
+슬롯 경로는 세팅 때 정한다 — 저장소 경로에 `OneDrive`·`Dropbox`·`iCloud`·`Google Drive` 가 들어 있으면 형제 폴더 대신 저장소 안 `.wt/slot-N`(`.gitignore` 추가)이나 동기화 밖 경로를 제안한다.
+격리 3이면 스크립트가 `e2e 대기`·검증 행을 슬롯 순서대로 돌리며 앱을 전환한다(`local-dev -Down` → 그 슬롯 트리에서 `local-dev` → e2e 명령 → 검증 자식). 판단이 없는 일이라 스크립트 몫이다.
+`DAG.md` 는 `harness_setup/scripts/dag-render.*` 로 만든다 — frontmatter 만 읽는 스크립트라 프로젝트 런타임(Node 면 `.mjs`, 아니면 PowerShell/셸)으로 쓰고 Bash 로 한 번 돌려 본다.
 코디네이터 허용 목록은 `Read,Write,Edit,Bash(git add:*),Bash(git commit:*),Bash(git merge:*),Bash(git worktree:*),Bash(git checkout:*),Bash(<local-dev 경로>:*),Bash(rm <결과 파일 경로>)` 이고 코드 수정 도구는 주지 않는다.
 구현 자식의 표준 출력은 `done-<ID>.txt` 로 받는다 — `TASK/STATUS/RETRY/LOG/END` 블록이고 `END` 가 없으면 중단된 것이다.
 슬롯 자식에게는 `plan_setup/`·`harness_setup/` 문서를 읽을 **주 트리 절대 경로**를 지시문에 넣는다 — 슬롯 트리의 문서는 낡았다.
@@ -109,8 +112,10 @@ AskUserQuestion 을 쓰는 자리는 둘이다. **한 번씩만 묻는다.** 첫
 
 **병렬 운용 (11단계) — 질문 셋.** ①병렬로 갈 것인가: 기본(첫 선택지, Recommended)은 **예**. 아니요면 ①-단일로 적고 격리는 미결로 남긴다.
 ②동시 에이전트 수 상한: 구간별 폭 표를 먼저 보여 주고 폭의 최댓값·그 절반·1 같은 선택지를 준다 — 폭보다 큰 수는 논다는 것을 `description` 에 적는다.
-③격리 방식: 슬롯별 환경 통째 분리 / DB 하나 + 슬롯별 데이터베이스·계정 / 공유 자원 게이트만 직렬화. `option.description` 에 **되돌리기 비용**과
-`local-dev` 가 슬롯 변수를 읽는지 확인한 결과를 적는다 — 안 읽으면 어느 선택지든 `harness-update` 가 먼저다.
+③격리 방식: 슬롯별 환경 통째 분리 / DB 하나 + 슬롯별 데이터베이스·계정 / 앱 쓰는 게이트만 직렬화. `option.description` 에 **되돌리기 비용**과
+`local-dev` 가 슬롯 변수를 읽는지 확인한 결과를 적는다 — 안 읽으면 1·2는 `harness-update` 가 먼저다. 3은 "병렬 이득이 구현·lint·unit 까지, e2e 와 검증은 슬롯 순서대로"를 적는다.
+④슬롯 경로(저장소가 동기화 폴더 아래일 때만 묻는다): 저장소 안 `.wt/slot-N` / 동기화 밖 경로. 아니면 형제 폴더를 기본으로 적고 묻지 않는다.
+②에서는 에이전트 배치도 같이 받는다 — 구현·검증·코디네이터 각각 claude/codex. 검증을 구현과 다른 에이전트로 두는 선택지를 첫째로 둔다.
 DAG 그림은 묻지 않고 그려서 보고에서 검토를 요청한다.
 
 **미활성 게이트를 달고 태스크를 완료시킬 것인가 (8단계).** 초기에는 거의 모든 게이트가 미활성이라
