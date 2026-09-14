@@ -76,8 +76,8 @@ codex exec -m <8절 반영 행> -c model_reasoning_effort="<8절 반영 행>" "<
 
 **①-병렬**은 라운드마다 코디네이터 트리에서 `codex exec "<코디네이터 지시문>"` 을 한 번 띄우고, `STATE.md` 의 `Assignments` 행마다 그 워커의 자리(슬롯 1 은 코디네이터 트리, 2 이상은 `worker-N` 트리)를 작업 디렉터리로
 구현·검증 자식을 **백그라운드로 동시에** 띄워 전부 끝날 때까지 기다린다(셸이면 `&` 와 `wait`, PowerShell 이면 `Start-Process -Wait`).
-코디네이터 트리는 세팅 때 `git worktree add <경로> -B coordinator main`, 워커 트리는 `git worktree add <8절 경로> -B worker-N coordinator` 로 코디네이터가 만든다.
-슬롯 1 의 `worker-1` 은 코디네이터 트리에서 돌고 워크트리는 둘째부터다. `main` 에서는 아무것도 띄우지 않는다 — 사용자의 자리다. 재배정 직전 `git checkout coordinator && git clean -fd`, 완료마다 `main` fast-forward.
+코디네이터 트리는 세팅 때 `git worktree add <경로> -B coordinator <8절 기본 브랜치>`, 워커 트리는 `git worktree add <8절 경로> -B worker-N coordinator` 로 코디네이터가 만든다.
+슬롯 1 의 `worker-1` 은 코디네이터 트리에서 돌고 워크트리는 둘째부터다. `main` 에서는 아무것도 띄우지 않는다 — 사용자의 자리다. 재배정 직전 `git checkout coordinator && git clean -fd`, 완료마다 기본 브랜치(8절 — `main` 이 아닐 수 있다) fast-forward.
 슬롯 경로는 세팅 때 정한다 — 저장소 경로에 `OneDrive`·`Dropbox`·`iCloud`·`Google Drive` 가 들어 있으면 형제 폴더 대신 저장소 안 `.wt/worker-N`(`.gitignore` 추가)이나 동기화 밖 경로를 제안한다.
 격리 3이면 스크립트가 `e2e 대기`·검증 행을 슬롯 순서대로 돌리며 앱을 전환한다(`local-dev` 내리기 → 그 슬롯 트리에서 `local-dev` → e2e 명령 → 검증 자식).
 `DAG.md` 는 `harness_setup/scripts/dag-render.*` 로 만든다 — frontmatter 만 읽는 스크립트라 프로젝트 런타임으로 쓰고 셸에서 한 번 돌려 본다. 코디네이터의 승인 범위는 `STATE.md`·`LOG.md`·태스크 문서 쓰기,
