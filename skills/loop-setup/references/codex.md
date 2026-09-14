@@ -52,9 +52,9 @@ Codex 는 저장소를 자유롭게 탐색하므로 **커밋 메시지와 최근
 `codex exec "<지시문>"` 이 새 세션을 자식 프로세스로 띄운다. 아래는 ①의 토막별 명령이고, ①-병렬은 이것을 슬롯 트리마다 띄운다.
 
 ```
-codex exec "<LOOP.md 의 구현 지시문>"
-codex exec "<LOOP.md 의 검증 지시문>" > <OS 임시 폴더>/verdict-<태스크 ID>.txt
-codex exec "<LOOP.md 의 반영 지시문>"
+codex exec -m <8절 구현 행> -c model_reasoning_effort="<8절 구현 행>" "<LOOP.md 의 구현 지시문>"
+codex exec -m <8절 검증 행> -c model_reasoning_effort="<8절 검증 행>" "<LOOP.md 의 검증 지시문>" > <OS 임시 폴더>/verdict-<태스크 ID>.txt
+codex exec -m <8절 반영 행> -c model_reasoning_effort="<8절 반영 행>" "<LOOP.md 의 반영 지시문>"
 ```
 
 세 지시문이 **구현 → 검증 → 반영** 세 토막이다. 구동기 스크립트는 `STATE.md` 의 `Last Verification` 과 판정 파일 유무만 보고
@@ -67,6 +67,12 @@ codex exec "<LOOP.md 의 반영 지시문>"
 승인 모드는 **구현·반영은 파일 쓰기·하네스 명령·`git add`·`git commit`·`git restore`·판정 파일 삭제, 검증은 읽기·`local-dev`·관찰 수단만** 자동 승인되는 범위로 잡고,
 전체 자동 승인은 사용자가 명시적으로 켠 경우에만 쓴다.
 정확한 플래그 이름은 설치된 코덱스 버전의 `codex exec --help` 로 확인한다 — 여기에 베껴 적으면 버전이 바뀔 때 낡는다.
+
+**모델과 추론 강도는 `-m`(`--model`)과 `-c model_reasoning_effort="..."` 로 토막마다 준다.** 모델 이름(예: 최상위·보통·저비용 급이 각각 따로 있다)과
+강도 값(`low|medium|high|xhigh|max|ultra`)은 설치된 버전의 모델 문서에서 확인한다 — 코덱스 모델은 몇 달 단위로 바뀌고 은퇴하므로 이름을 스크립트에 박지 않고 LOOP.md 8절 표에서 읽는다.
+역할별 모델은 번호 목록 하나로 묻는다 — A) 추천대로 B) 전부 최상위 C) 전부 보통 D) 직접 지정. 각 선택지에 사용량 차이(폭 × 모델)를 붙인다.
+승인·샌드박스는 `-a on-request|never` 와 `-s read-only|workspace-write|danger-full-access` 로 — 구현·반영은 `workspace-write`, 검증은 `read-only`. `--full-auto` 는 폐기 예정이라 쓰지 않는다.
+①-병렬의 코디네이터 자식은 8절 코디네이터 행의 모델로 띄운다.
 
 **①-병렬**은 라운드마다 `codex exec "<코디네이터 지시문>"` 을 한 번 띄우고, `STATE.md` 의 `Assignments` 행마다 슬롯 트리를 작업 디렉터리로
 구현·검증 자식을 **백그라운드로 동시에** 띄워 전부 끝날 때까지 기다린다(셸이면 `&` 와 `wait`, PowerShell 이면 `Start-Process -Wait`).

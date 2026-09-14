@@ -59,19 +59,24 @@ Explore 서브에이전트에게 **"모든 태스크의 frontmatter 를 표로 �
 헤드리스 실행(`claude -p`)은 이 저장소에서 실제로 확인됐다. 아래는 ①의 토막별 명령이고, ①-병렬은 이것을 슬롯 트리마다 띄운다.
 
 ```
-claude -p "<LOOP.md 의 구현 지시문>" --allowedTools "Read,Write,Edit,Bash(<local-dev 경로>:*),Bash(<게이트 명령>:*),Bash(git add:*),Bash(git commit:*),Bash(git restore:*),Bash(rm <판정 파일 경로>)" --output-format text
-claude -p "<LOOP.md 의 검증 지시문>" --allowedTools "Read,Bash(<local-dev 경로>:*),<HARNESS.md 의 관찰 수단 도구 — 브라우저 MCP 도구 이름 또는 Bash(<e2e 도구>:*)>" --output-format text > <판정 파일 경로>
+claude -p "<LOOP.md 의 구현 지시문>" --model <8절 구현 행> --effort <8절 구현 행> --allowedTools "Read,Write,Edit,Bash(<local-dev 경로>:*),Bash(<게이트 명령>:*),Bash(git add:*),Bash(git commit:*),Bash(git restore:*),Bash(rm <판정 파일 경로>)" --output-format text
+claude -p "<LOOP.md 의 검증 지시문>" --model <8절 검증 행> --effort <8절 검증 행> --allowedTools "Read,Bash(<local-dev 경로>:*),<HARNESS.md 의 관찰 수단 도구 — 브라우저 MCP 도구 이름 또는 Bash(<e2e 도구>:*)>" --output-format text > <판정 파일 경로>
 ```
 
 검증 세션의 허용 목록에 **관찰 수단이 빠지면** 검증자는 화면을 볼 수 없어 `판정 불가` 만 내거나, 더 나쁘게는 코드를 읽는다.
 브라우저 MCP 도구는 `mcp__<서버>__*` 형태의 이름으로 허용한다. 판정 파일은 저장소 밖(OS 임시 폴더)에 두고 반영 토막이 지운다.
 ```
-claude -p "<LOOP.md 의 반영 지시문>" --allowedTools "(구현과 같은 목록)" --output-format text
+claude -p "<LOOP.md 의 반영 지시문>" --model <8절 반영 행> --effort <8절 반영 행> --allowedTools "(구현과 같은 목록)" --output-format text
 ```
 
 세 지시문이 **구현 → 검증 → 반영** 세 토막이다. 구동기 스크립트는 `STATE.md` 의 `Last Verification` 과 판정 파일 유무만 보고
 어느 것을 띄울지 정한다(LOOP.md 4절의 알고리즘). `git commit` 이 허용 목록에 없으면 반영 토막이 완료 뒤 커밋에서 멈춘다.
 Windows 에서 세션의 셸 도구 이름이 `Bash` 가 아니라 `PowerShell` 이면 허용 목록의 이름도 그것으로 쓴다.
+
+**모델과 추론 강도는 `--model`·`--effort` 로 토막마다 준다.** 별칭(`opus`·`sonnet`·`haiku`)과 강도(`low|medium|high|xhigh|max`)는 설치된 버전의 `claude --help` 로 확인한다.
+값은 LOOP.md 8절 표에서 읽고 스크립트에 박지 않는다. 역할별 모델을 묻는 질문은 AskUserQuestion 하나로 — 선택지 넷(추천대로 / 전부 최상위 / 전부 보통 / 직접 지정)에
+`description` 으로 사용량 차이(폭 × 모델)를 적는다. "직접 지정"이면 역할마다 한 번 더 묻는다. `--max-budget-usd` 가 있으면 구현 토막에 상한을 걸어 폭주를 막을 수 있다 — 값은 사용자에게 묻는다.
+코디네이터 자식(①-병렬)은 8절 코디네이터 행의 모델로 띄운다 — 판단만 하는 자리에 보통 급을 쓰면 배정·병합에서 흔들린다.
 
 확인된 동작 셋 — 허용 목록 안의 도구는 승인 없이 돌고, 목록 밖의 쓰기는 **멈추지 않고 거부로 끝나며**
 (자식에게 "거부되면 그렇게 적고 종료하라"를 지시문에 둔다), 읽기 전용 셸 명령은 목록에 없어도 통과한다.
@@ -93,6 +98,7 @@ Windows 에서 세션의 셸 도구 이름이 `Bash` 가 아니라 `PowerShell` 
 미활성 승인 같은 질문을 사람 대신 코디네이터가 답할 수 있다. 명령 표면은 `orca skills get orchestration` 으로 그 버전 것을 읽는다.
 
 **③ 서브에이전트**는 상위 세션이 Agent 도구로 구현·검증을 각각 띄우는 것이다. 클로드 코드에서만 된다.
+Agent 도구의 `model` 인자(`opus`·`sonnet`·`haiku`)에 8절 표의 값을 준다. 상위 세션이 코디네이터이므로 상위 세션 자체를 코디네이터 급으로 연다.
 
 어느 모드든 **검증 세션은 `STATE.md`·`LOG.md` 를 쓰지 않는다.** 판정 블록을 출력하고, 옮기는 것은 구동기다.
 
