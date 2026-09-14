@@ -1,7 +1,7 @@
 # harness-loop-fullstack (한글)
 
 아이디어 하나를 **문서로 굳히고, 태스크로 쪼개고, 검증 관문을 세우고, 그 관문을 통과할 때까지 에이전트가 스스로 도는 규칙**까지
-한 흐름으로 만들어 주는 한글 스킬 플러그인입니다. 클로드 코드와 코덱스에서 같은 파일로 동작합니다.
+한 흐름으로 만들어 주는 한글 스킬 플러그인입니다. 클로드 코드와 코덱스가 같은 스킬 파일을 읽도록 만들었습니다(코덱스 설치는 2절의 '확인된 범위' 참고).
 
 ---
 
@@ -181,7 +181,7 @@ priority: P0
 goal: 발행 시 연속 번호를 부여한다
 depends_on: [phase-01-task-09, phase-02-task-01]
 files: [src/data/invoice-number.ts, src/data/invoice-number.test.ts]
-architecture: database.md §3.2
+architecture: [database.md §3.2, backend.md §3.5]
 acceptance_criteria: [...]
 status: pending          # pending / in_progress / blocked / failed / completed
 verification: [lint, unit, e2e, task_validation]
@@ -260,7 +260,7 @@ blocked_by: []           # 미결(OQ)·충돌(CF)에 막혔으면 그 ID
 구현한 세션은 자기가 무엇을 **의도했는지** 알고 있습니다. 그래서 화면이 실제로 그렇게 동작하지 않아도 그렇게 보이고,
 수용 기준의 애매한 문장을 자기 구현에 맞는 쪽으로 읽습니다. 나쁜 의도가 아니라 정보의 문제입니다. 그래서 코드 작성과 검증을 떼어 놓습니다.
 
-검증 세션에 **주는 것**은 넷뿐입니다 — 태스크 문서 경로, 실행 중인 앱의 주소, `task_validation.md`, 판정 블록을 출력하라는 지시(필요하면 태스크의 `architecture` 가 가리키는 설계 절).
+검증 세션에 **주는 것**은 넷뿐입니다 — 태스크 문서 경로, 실행 중인 앱(`local-dev` 로 띄운 것), `task_validation.md`(절차와 판정 형식), 필요하면 태스크의 `architecture` 가 가리키는 설계 절.
 **주지 않는 것**이 이 게이트의 실질입니다 — 구현 세션의 대화·요약·"무엇을 했는지", 통과 보고, 원인 추정, 커밋 메시지·최근 변경 파일.
 
 검증자는 **앱을 실제로 조작해 수용 기준 한 줄마다 관찰한 증거를 적습니다.** 코드를 읽고 PASS 를 주지 않고, 고치지 않고, 원인을 추정하지 않습니다.
@@ -303,7 +303,7 @@ END
 
 | 토막 | 하는 일 |
 |---|---|
-| **구현** | 태스크 선택 → 시작 전 하네스 점검 → `in_progress` 기록 → 구현 → `local-dev` → `lint`·`unit`·`e2e` → "task_validation 대기"를 적고 종료 |
+| **구현** | 태스크 선택(병렬이면 코디네이터가 배정한 것) → 시작 전 하네스 점검 → `in_progress` 기록 → 구현 → `local-dev` → `lint`·`unit`·`e2e` → "task_validation 대기"를 적고 종료 |
 | **검증** | 새 세션이 `task_validation` 만 돌려 판정 블록을 내고 종료 |
 | **반영** | 판정을 `STATE.md`·`LOG.md` 로 옮김 → PASS 면 완료·커밋·phase 판정 / FAIL 이면 분류 → 수정 → 재실행 |
 
@@ -339,7 +339,8 @@ END
 | ② 오르카 오케스트레이션 | `orca orchestration worker-start --agent claude\|codex` 로 워커를 띄움 | 오르카가 있을 때의 기본 |
 | ③ 서브에이전트 | 상위 세션이 Agent 도구로 띄움 | 클로드 코드 전용 대안 |
 
-지시문은 `LOOP.md` 에 고정된 것을 그대로 씁니다. 자식 세션은 사람에게 물을 수 없으므로 물을 일이 생기면 `Next Action` 에 적고 종료하고, 구동기가 그것을 보고 멈춥니다.
+지시문은 `LOOP.md` 에 고정된 것을 그대로 씁니다. 자식 세션은 사람에게 물을 수 없으므로 물을 일이 생기면 종료하고 구동기가 멈춥니다 —
+단일 모드는 자식이 직접 `STATE.md` 의 `Next Action` 에 `질문:` 을 적고, 병렬은 워커가 출력 블록으로 넘기면 **코디네이터가** 적습니다(6.5 의 필자 규칙).
 권한은 허용 목록으로 주고 토막마다 다릅니다 — 검증 세션에는 쓰기와 git 을 주지 않습니다.
 
 ### 6.5 병렬 운용 — 기본값
@@ -390,7 +391,7 @@ skills/
 .claude-plugin/             클로드 코드 마켓플레이스·플러그인 매니페스트
 .agents/plugins/            코덱스 마켓플레이스 매니페스트
 plugin.json                 코덱스 플러그인 매니페스트 (agent-plugins.org 공통 표준)
-AGENTS.md                   플러그인 없이 서브모듈로 쓸 때의 색인
+AGENTS.md                   플러그인 없이 서브모듈로 쓸 때의 색인 (코덱스 플러그인 설치는 아직 실측 전 — 2절)
 ```
 
 **스킬 본문은 두 환경에서 같습니다.** 절차·판단 기준·산출물 형식이 `SKILL.md` 한 곳에 있고, 환경마다 다른 것만 `references/` 로 뺐습니다.
