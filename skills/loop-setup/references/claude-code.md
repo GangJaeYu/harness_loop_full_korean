@@ -83,18 +83,20 @@ Windows 에서 세션의 셸 도구 이름이 `Bash` 가 아니라 `PowerShell` 
 자식은 작업 디렉터리의 `CLAUDE.md` 를 자동으로 읽는다 — 12단계에서 넣은 `## 루프` 절이 "LOOP.md 0절부터"를 말하므로, 지시문이 잘리거나 짧아도 규칙은 남는다. 지시문은 4절의 템플릿(LOOP.md 를 직접 가리킨다)을 그대로 쓴다.
 `--dangerously-skip-permissions` 는 **사용자가 명시적으로 켠 경우에만** 쓰고, 그 사실을 `LOOP.md` 에 적는다.
 
-**①-병렬**은 라운드마다 `claude -p "<코디네이터 지시문>"` 을 한 번 띄우고, `STATE.md` 의 `Assignments` 행마다 슬롯 트리에서
+**①-병렬**은 라운드마다 코디네이터 트리에서 `claude -p "<코디네이터 지시문>"` 을 한 번 띄우고, `STATE.md` 의 `Assignments` 행마다 그 워커의 `worker-N` 트리에서
 구현·검증 자식을 **백그라운드로 동시에** 띄워 전부 끝날 때까지 기다린다(PowerShell 이면 `Start-Process -Wait`/`Start-Job`, 셸이면 `&` 와 `wait`).
-슬롯 2 이상은 `git worktree add <8절 슬롯 경로> -B slot-N main` 으로 코디네이터가 만들고, 자식은 그 폴더를 작업 디렉터리로 받는다.
-슬롯 경로는 세팅 때 정한다 — 저장소 경로에 `OneDrive`·`Dropbox`·`iCloud`·`Google Drive` 가 들어 있으면 형제 폴더 대신 저장소 안 `.wt/slot-N`(`.gitignore` 추가)이나 동기화 밖 경로를 제안한다.
+코디네이터 트리는 세팅 때 `git worktree add <경로> -B coordinator main`, 워커 트리는 `git worktree add <8절 경로> -B worker-N coordinator` 로 코디네이터가 만들고, 자식은 그 폴더를 작업 디렉터리로 받는다.
+`main` 에서는 아무것도 띄우지 않는다 — 사용자의 자리다. 재배정 직전 `git checkout coordinator && git clean -fd`, 완료마다 `main` fast-forward.
+슬롯 경로는 세팅 때 정한다 — 저장소 경로에 `OneDrive`·`Dropbox`·`iCloud`·`Google Drive` 가 들어 있으면 형제 폴더 대신 저장소 안 `.wt/worker-N`(`.gitignore` 추가)이나 동기화 밖 경로를 제안한다.
 격리 3이면 스크립트가 `e2e 대기`·검증 행을 슬롯 순서대로 돌리며 앱을 전환한다(`local-dev -Down` → 그 슬롯 트리에서 `local-dev` → e2e 명령 → 검증 자식). 판단이 없는 일이라 스크립트 몫이다.
 `DAG.md` 는 `harness_setup/scripts/dag-render.*` 로 만든다 — frontmatter 만 읽는 스크립트라 프로젝트 런타임(Node 면 `.mjs`, 아니면 PowerShell/셸)으로 쓰고 Bash 로 한 번 돌려 본다.
-코디네이터 허용 목록은 `Read,Write,Edit,Bash(git add:*),Bash(git commit:*),Bash(git merge:*),Bash(git worktree:*),Bash(git checkout:*),Bash(<local-dev 경로>:*),Bash(rm <결과 파일 경로>)` 이고 코드 수정 도구는 주지 않는다.
+코디네이터 허용 목록은 `Read,Write,Edit,Bash(git add:*),Bash(git commit:*),Bash(git merge:*),Bash(git worktree:*),Bash(git checkout:*),Bash(git clean:*),Bash(<local-dev 경로>:*),Bash(rm <결과 파일 경로>)` 이고 코드 수정 도구는 주지 않는다. 워커에는 `git clean`·`git merge` 를 주지 않는다.
 구현 자식의 표준 출력은 `done-<ID>.txt` 로 받는다 — `TASK/STATUS/RETRY/LOG/END` 블록이고 `END` 가 없으면 중단된 것이다.
-슬롯 자식에게는 `plan_setup/`·`harness_setup/` 문서를 읽을 **주 트리 절대 경로**를 지시문에 넣는다 — 슬롯 트리의 문서는 낡았다.
+워커 자식에게는 `plan_setup/`·`harness_setup/` 문서를 읽을 **코디네이터 트리 절대 경로**와 자기 이름(`worker-N`)을 지시문에 넣는다 — 워커 트리의 문서는 낡았다.
 
-**② 오르카**가 있으면 `orca orchestration worker-start --spec "<지시문>" --worktree current|<슬롯 워크트리> --agent claude` 로 워커를 띄우고
-`check --wait --types "worker_done,question"` 으로 받는다. `--worktree` 는 8절 슬롯 규칙대로 — 첫 구현 워커·검증 워커·비코드 태스크는 `current`, 동시에 코드를 쓰는 둘째부터 슬롯 워크트리다. 워커의 `ask` 가 코디네이터에게 블로킹으로 오므로
+**② 오르카**가 있으면 코디네이터 트리에서 `orca orchestration worker-start --spec "worker-N: <지시문>" --worktree <worker-N 워크트리> --agent claude` 로 워커를 띄우고
+`check --wait --types "worker_done,question"` 으로 받는다. `--worktree` 는 8절 슬롯 규칙대로 — 슬롯 N 의 워커는 `worker-N` 워크트리이고 `current`·`main` 에서 띄우지 않는다.
+오르카 화면에서 카드가 `coordinator`·`worker-1`·`worker-2` 로 보이도록 `orca worktree set --worktree <id> --display-name worker-N` 을 세팅 때 한 번 한다. 워커의 `ask` 가 코디네이터에게 블로킹으로 오므로
 미활성 승인 같은 질문을 사람 대신 코디네이터가 답할 수 있다. 명령 표면은 `orca skills get orchestration` 으로 그 버전 것을 읽는다.
 
 **③ 서브에이전트**는 상위 세션이 Agent 도구로 구현·검증을 각각 띄우는 것이다. 클로드 코드에서만 된다.
@@ -120,7 +122,7 @@ AskUserQuestion 을 쓰는 자리는 둘이다. **한 번씩만 묻는다.** 첫
 ②동시 에이전트 수 상한: 구간별 폭 표를 먼저 보여 주고 폭의 최댓값·그 절반·1 같은 선택지를 준다 — 폭보다 큰 수는 논다는 것을 `description` 에 적는다.
 ③격리 방식: 슬롯별 환경 통째 분리 / DB 하나 + 슬롯별 데이터베이스·계정 / 앱 쓰는 게이트만 직렬화. `option.description` 에 **되돌리기 비용**과
 `local-dev` 가 슬롯 변수를 읽는지 확인한 결과를 적는다 — 안 읽으면 1·2는 `harness-update` 가 먼저다. 3은 "병렬 이득이 구현·lint·unit 까지, e2e 와 검증은 슬롯 순서대로"를 적는다.
-④슬롯 경로(저장소가 동기화 폴더 아래일 때만 묻는다): 저장소 안 `.wt/slot-N` / 동기화 밖 경로. 아니면 형제 폴더를 기본으로 적고 묻지 않는다.
+④슬롯 경로(저장소가 동기화 폴더 아래일 때만 묻는다): 저장소 안 `.wt/worker-N` / 동기화 밖 경로. 아니면 형제 폴더를 기본으로 적고 묻지 않는다.
 ②에서는 에이전트 배치도 같이 받는다 — 구현·검증·코디네이터 각각 claude/codex. 검증을 구현과 다른 에이전트로 두는 선택지를 첫째로 둔다.
 DAG 그림은 묻지 않고 그려서 보고에서 검토를 요청한다.
 
