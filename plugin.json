@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "harness-loop-fullstack",
-  "version": "1.4.0",
+  "version": "1.4.1",
   "description": "아이디어 구체화 → PRD/TRD → 아키텍처 → 마스터 플랜 → 검증 하네스 → 개발 루프까지, 풀스택 프로젝트를 한 흐름으로 설계하고 구현하게 하는 한글 스킬 9개. 각 레이어는 앞 레이어의 '파일'만 입력으로 받아 세션이 끊겨도 이어서 진행할 수 있다.",
   "author": {
     "name": "FlyingTajo"

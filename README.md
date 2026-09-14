@@ -61,10 +61,12 @@ flowchart TD
 
 ```bash
 codex plugin marketplace add GangJaeYu/harness_loop_full_korean
-codex plugin marketplace list
+codex plugin marketplace list                                   # 등록됐는지 확인
+codex plugin add harness-loop-fullstack@harness-loop-fullstack  # 플러그인 설치
 ```
 
-브랜치나 태그를 고정하려면 `...@main` 또는 `...#v1.4.0` 을 붙입니다.
+브랜치나 태그를 고정하려면 저장소 뒤에 `@` 로 붙입니다 — 두 호스트 모두 같습니다.
+예: `GangJaeYu/harness_loop_full_korean@v1.4.1` (태그) 또는 `...@main` (브랜치).
 설치 후에는 어느 프로젝트에서든 "PRD 만들어줘" 같은 말에 해당 스킬이 걸립니다.
 
 > **확인된 범위**: 클로드 코드 설치와 헤드리스 자식 세션(`claude -p`) 실행은 실제로 확인했습니다.
