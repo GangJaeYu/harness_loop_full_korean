@@ -18,19 +18,31 @@ sets pass criteria (gates) for every task; and then **implements, verifies, and 
 You review each stage, and once the loop is running you only step in **when it asks a question.**
 
 ```mermaid
-%%{init: {'themeVariables': {'fontSize': '18px'}, 'flowchart': {'nodeSpacing': 30, 'rankSpacing': 40}}}%%
+%%{init: {'theme': 'base', 'themeVariables': {'fontSize': '17px', 'lineColor': '#94a3b8', 'edgeLabelBackground': '#e2e8f0', 'titleColor': '#8b949e'}, 'flowchart': {'curve': 'basis', 'nodeSpacing': 34, 'rankSpacing': 44, 'padding': 14}}}%%
 flowchart TB
-    subgraph S1["① Docs and plan — you review each stage"]
+    subgraph S1["① Docs and plan · you review each stage"]
         direction LR
-        A[Idea] --> B[PRD · TRD] --> C[Architecture] --> D[Master plan]
+        A([Idea]) --> B([PRD · TRD]) --> C([Architecture]) --> D([Master plan])
     end
-    subgraph S2["② Development loop — you answer only when asked"]
+    subgraph S2["② Development loop · you answer only when asked"]
         direction LR
-        E[Verification harness] --> G[Implement task] --> V{Gates +<br/>separate check}
-        V -->|FAIL · classify, fix| G
-        V -->|PASS| H[Commit →<br/>next task]
+        E([Verification harness]) --> G([Implement task]) --> V{{Gates + separate check}}
+        V -- "FAIL · classify, fix" --> G
+        V -- PASS --> H([Commit → next task])
     end
     S1 --> S2
+    classDef doc fill:#475569,stroke:#64748b,color:#ffffff,stroke-width:1px
+    classDef build fill:#4f46e5,stroke:#4338ca,color:#ffffff,stroke-width:1px
+    classDef check fill:#7c3aed,stroke:#6d28d9,color:#ffffff,stroke-width:1px
+    classDef done fill:#059669,stroke:#047857,color:#ffffff,stroke-width:1px
+    class A,B,C,D doc
+    class E,G build
+    class V check
+    class H done
+    style S1 fill:none,stroke:#94a3b8,stroke-width:1px,stroke-dasharray:5 4,color:#8b949e
+    style S2 fill:none,stroke:#94a3b8,stroke-width:1px,stroke-dasharray:5 4,color:#8b949e
+    linkStyle 5 stroke:#f59e0b,stroke-width:2px
+    linkStyle 6 stroke:#10b981,stroke-width:2px
 ```
 
 ## What makes it different
