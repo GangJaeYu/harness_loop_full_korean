@@ -18,15 +18,19 @@
 사람은 단계마다 결과를 검토하고, 루프가 돌기 시작하면 **루프가 질문을 올릴 때만** 답합니다.
 
 ```mermaid
-flowchart LR
-    A[아이디어] --> B[PRD · TRD]
-    B --> C[아키텍처]
-    C --> D[마스터 플랜<br/>phase · task]
-    D --> E[검증 하네스<br/>게이트 4개]
-    E --> F[개발 루프]
-    F -->|태스크마다| G[구현 → 게이트 → 분리 검증]
-    G -->|FAIL| G
-    G -->|PASS| H[커밋 → 다음 태스크]
+%%{init: {'themeVariables': {'fontSize': '18px'}, 'flowchart': {'nodeSpacing': 30, 'rankSpacing': 40}}}%%
+flowchart TB
+    subgraph S1["① 문서와 계획 — 단계마다 사람이 검토"]
+        direction LR
+        A[아이디어] --> B[PRD · TRD] --> C[아키텍처] --> D[마스터 플랜]
+    end
+    subgraph S2["② 개발 루프 — 질문이 올 때만 사람이 답함"]
+        direction LR
+        E[검증 하네스] --> G[태스크 구현] --> V{게이트 +<br/>분리 검증}
+        V -->|FAIL · 분류 후 수정| G
+        V -->|PASS| H[커밋 →<br/>다음 태스크]
+    end
+    S1 --> S2
 ```
 
 ## 무엇이 다른가

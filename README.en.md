@@ -18,15 +18,19 @@ sets pass criteria (gates) for every task; and then **implements, verifies, and 
 You review each stage, and once the loop is running you only step in **when it asks a question.**
 
 ```mermaid
-flowchart LR
-    A[Idea] --> B[PRD · TRD]
-    B --> C[Architecture]
-    C --> D[Master plan<br/>phases · tasks]
-    D --> E[Verification harness<br/>4 gates]
-    E --> F[Development loop]
-    F -->|per task| G[Implement → gates → separate-session check]
-    G -->|FAIL| G
-    G -->|PASS| H[Commit → next task]
+%%{init: {'themeVariables': {'fontSize': '18px'}, 'flowchart': {'nodeSpacing': 30, 'rankSpacing': 40}}}%%
+flowchart TB
+    subgraph S1["① Docs and plan — you review each stage"]
+        direction LR
+        A[Idea] --> B[PRD · TRD] --> C[Architecture] --> D[Master plan]
+    end
+    subgraph S2["② Development loop — you answer only when asked"]
+        direction LR
+        E[Verification harness] --> G[Implement task] --> V{Gates +<br/>separate check}
+        V -->|FAIL · classify, fix| G
+        V -->|PASS| H[Commit →<br/>next task]
+    end
+    S1 --> S2
 ```
 
 ## What makes it different
