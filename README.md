@@ -18,31 +18,27 @@
 사람은 단계마다 결과를 검토하고, 루프가 돌기 시작하면 **루프가 질문을 올릴 때만** 답합니다.
 
 ```mermaid
-%%{init: {'theme': 'base', 'themeVariables': {'fontSize': '17px', 'lineColor': '#94a3b8', 'edgeLabelBackground': '#e2e8f0', 'titleColor': '#8b949e'}, 'flowchart': {'curve': 'basis', 'nodeSpacing': 34, 'rankSpacing': 44, 'padding': 14}}}%%
+%%{init: {'theme': 'base', 'themeVariables': {'fontSize': '14px', 'lineColor': '#8c959f', 'edgeLabelBackground': '#ffffff'}, 'flowchart': {'curve': 'basis', 'nodeSpacing': 24, 'rankSpacing': 26, 'padding': 10, 'subGraphTitleMargin': {'top': 6, 'bottom': 8}}}}%%
 flowchart TB
-    subgraph S1["① 문서와 계획 · 단계마다 사람이 검토"]
-        direction LR
-        A([아이디어]) --> B([PRD · TRD]) --> C([아키텍처]) --> D([마스터 플랜])
+    subgraph S1["1 · Docs and plan"]
+        A["Idea → PRD · TRD<br>→ Architecture → Master plan"]
     end
-    subgraph S2["② 개발 루프 · 질문이 올 때만 사람이 답함"]
-        direction LR
-        E([검증 하네스]) --> G([태스크 구현]) --> V{{게이트 + 분리 검증}}
-        V -- "FAIL · 분류 후 수정" --> G
-        V -- PASS --> H([커밋 → 다음 태스크])
+    subgraph S2["2 · Development loop"]
+        direction TB
+        E["Verification harness"] --> G["Implement task"] --> V{{"Gates + separate check"}}
+        V -- "FAIL · classify, then fix" --> G
+        V -- "PASS" --> H["Commit → next task"]
     end
-    S1 --> S2
-    classDef doc fill:#475569,stroke:#64748b,color:#ffffff,stroke-width:1px
-    classDef build fill:#4f46e5,stroke:#4338ca,color:#ffffff,stroke-width:1px
-    classDef check fill:#7c3aed,stroke:#6d28d9,color:#ffffff,stroke-width:1px
-    classDef done fill:#059669,stroke:#047857,color:#ffffff,stroke-width:1px
-    class A,B,C,D doc
-    class E,G build
-    class V check
-    class H done
-    style S1 fill:none,stroke:#94a3b8,stroke-width:1px,stroke-dasharray:5 4,color:#8b949e
-    style S2 fill:none,stroke:#94a3b8,stroke-width:1px,stroke-dasharray:5 4,color:#8b949e
-    linkStyle 5 stroke:#f59e0b,stroke-width:2px
-    linkStyle 6 stroke:#10b981,stroke-width:2px
+    S1 -- "You review each stage" --> S2
+    classDef node fill:#f6f8fa,stroke:#d0d7de,color:#1f2328,stroke-width:1px
+    classDef key fill:#24292f,stroke:#6e7781,color:#ffffff,stroke-width:1px
+    classDef out fill:#ffffff,stroke:#24292f,color:#1f2328,stroke-width:1.5px
+    class A,E,G node
+    class V key
+    class H out
+    style S1 fill:transparent,stroke:#d0d7de,color:#8c959f
+    style S2 fill:transparent,stroke:#d0d7de,color:#8c959f
+    linkStyle 2 stroke-dasharray:4 3
 ```
 
 ## 무엇이 다른가
