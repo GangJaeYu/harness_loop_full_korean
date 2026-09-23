@@ -32,8 +32,8 @@ codex plugin marketplace list                                   # 등록됐는�
 codex plugin add harness-loop-fullstack@harness-loop-fullstack  # 플러그인 설치
 ```
 
-> 코덱스의 플러그인 설치와 `skills/` 자동 탐색은 매니페스트 규격대로 두었지만 **실제 설치로는 아직 확인하지 못했습니다.**
-> 안 되면 아래 "플러그인 없이"의 서브모듈 방식을 쓰세요.
+> Codex CLI 0.156.1 에서 위 명령으로 설치되고(`codex plugin list` 에 `installed, enabled`), 스킬 13개가 `harness-loop-fullstack:<스킬>` 이름으로 인식되는 것을 확인했습니다.
+> 코덱스로 루프 전체를 돌려 본 적은 아직 없습니다. 문제가 있으면 아래 "플러그인 없이"의 서브모듈 방식을 쓸 수 있습니다.
 
 ### 버전 고정
 

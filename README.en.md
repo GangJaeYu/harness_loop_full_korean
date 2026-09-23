@@ -5,7 +5,7 @@
 [![version](https://img.shields.io/badge/version-1.10.0-blue)](CHANGELOG.md)
 [![license](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 [![Claude Code](https://img.shields.io/badge/Claude%20Code-plugin-8A2BE2)](#install)
-[![Codex](https://img.shields.io/badge/Codex-experimental-lightgrey)](docs/getting-started.md)
+[![Codex](https://img.shields.io/badge/Codex-plugin-10A37F)](#install)
 
 > **Language note**: the skills, the documents they produce, and the detailed docs are written in **Korean**. This page is an English overview. ([한국어 README](README.md))
 
@@ -44,7 +44,14 @@ flowchart LR
 /plugin install harness-loop-fullstack@harness-loop-fullstack
 ```
 
-Pin a version with `GangJaeYu/harness_loop_full_korean@v1.10.0`. Codex install and plugin-free setup are in [Getting started](docs/getting-started.md) (Korean).
+Codex:
+
+```bash
+codex plugin marketplace add GangJaeYu/harness_loop_full_korean
+codex plugin add harness-loop-fullstack@harness-loop-fullstack
+```
+
+Pin a version with `GangJaeYu/harness_loop_full_korean@v1.10.0` (both hosts). Plugin-free setup is in [Getting started](docs/getting-started.md) (Korean).
 
 **Requirements**: a git repository and the Claude Code (or Codex) CLI. For the loop stage, depending on your stack: **Docker** (DB and other services), **Node + Playwright** (e2e), and PowerShell 7 on Windows. [Orca](docs/loop.md) (an agent development environment) is optional for parallel runs.
 
@@ -74,7 +81,7 @@ See the [example project](examples/deskwork/) for real output of the full chain 
   The one real-world project so far (a web ERP, 76 tasks, ~60k lines) used about 1.77B input tokens (mostly cache reads) over 9 days.
   Version 1.10.0 removed the largest waste found in that run (a long-lived coordinator, ~30% of the total), but **the improvement has not been re-measured on a real project yet.**
 - Real-world validation is **one project** so far.
-- Codex installation follows the manifest spec but **has not been verified by an actual install.**
+- **Codex install and skill discovery are verified** (Codex CLI 0.156.1), but a full loop has not been run on Codex yet. The real-world project used Claude Code.
 - The loop's driver script is written per project by the agent — **run the smoke test the setup suggests before the first run.**
 - Overkill for small scripts; designed for multi-screen, multi-phase web applications.
 

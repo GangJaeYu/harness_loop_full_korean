@@ -7,7 +7,7 @@
 [![version](https://img.shields.io/badge/version-1.10.0-blue)](CHANGELOG.md)
 [![license](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 [![Claude Code](https://img.shields.io/badge/Claude%20Code-plugin-8A2BE2)](#설치)
-[![Codex](https://img.shields.io/badge/Codex-experimental-lightgrey)](docs/getting-started.md#코덱스)
+[![Codex](https://img.shields.io/badge/Codex-plugin-10A37F)](docs/getting-started.md#코덱스)
 
 ---
 
@@ -44,7 +44,16 @@ flowchart LR
 /plugin install harness-loop-fullstack@harness-loop-fullstack
 ```
 
-버전을 고정하려면 `GangJaeYu/harness_loop_full_korean@v1.10.0` 처럼 붙입니다. 코덱스 설치, 플러그인 없이 쓰는 방법은 [시작하기](docs/getting-started.md)를 보세요.
+버전을 고정하려면 `GangJaeYu/harness_loop_full_korean@v1.10.0` 처럼 붙입니다.
+
+코덱스:
+
+```bash
+codex plugin marketplace add GangJaeYu/harness_loop_full_korean
+codex plugin add harness-loop-fullstack@harness-loop-fullstack
+```
+
+플러그인 없이 쓰는 방법은 [시작하기](docs/getting-started.md)를 보세요.
 
 **필요한 것**: git 저장소, Claude Code(또는 Codex) CLI. 루프 단계에서는 프로젝트 스택에 따라 **Docker**(DB 등 의존 서비스), **Node·Playwright**(e2e) 가 필요하고,
 Windows 에서는 PowerShell 7(`pwsh`)을 권장합니다. 병렬 운용에 [Orca](docs/loop.md#구동기--세션을-누가-여는가)(ADE)를 쓸 수 있지만 없어도 됩니다.
@@ -96,7 +105,7 @@ Windows 에서는 PowerShell 7(`pwsh`)을 권장합니다. 병렬 운용에 [Orc
   실사용 프로젝트(웹 ERP, 태스크 76개, 코드 약 6만 줄)는 9일 동안 입력 토큰 약 17.7억(대부분 캐시 읽기)을 썼습니다.
   그 기록을 분석해 1.10.0 에서 가장 큰 낭비(상주 코디네이터, 전체의 약 30%)를 걷어냈지만, **개선 후 실제 프로젝트로 다시 재지는 않았습니다.**
 - **실사용 검증은 아직 한 프로젝트뿐입니다.** 다른 스택·환경에서의 사례를 기다리고 있습니다.
-- **코덱스 설치는 매니페스트 규격대로 두었지만 실제 설치로 확인하지 못했습니다.**
+- **코덱스는 설치와 스킬 인식까지 확인했지만**(Codex CLI 0.156.1), 코덱스로 루프 전체를 돌려 보지는 않았습니다. 실사용 프로젝트는 클로드 코드로 진행했습니다.
 - 구동 스크립트는 프로젝트마다 에이전트가 새로 작성합니다. **첫 구동 전에 루프 세팅이 안내하는 시험 실행(스모크 테스트)을 꼭 돌리세요.**
 - 작은 스크립트 한 개짜리 작업에는 과합니다. 여러 화면·여러 phase 가 있는 웹 애플리케이션을 전제로 만들었습니다.
 
