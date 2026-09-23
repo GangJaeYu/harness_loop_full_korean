@@ -1,6 +1,27 @@
 {
   "name": "harness-loop-fullstack",
-  "description": "브레인스토밍부터 PRD/TRD, 아키텍처, 마스터 플랜, 하네스(품질 게이트), 개발 루프, 그리고 완료 뒤의 리팩토링·기능 추가·버그 수정까지 풀스택 프로젝트를 한 흐름으로 설계·구현하게 해주는 한글 스킬 모음",
+  "description": "브레인스토밍부터 PRD/TRD, 아키텍처, 마스터 플랜, 하네스(품질 게이트), 개발 루프, 그리고 완료 뒤의 리팩토링·기능 추가·버그 수정까지 풀스택 프로젝트를 한 흐름으로 설계·구현하게 해주는 한글 스킬 모음 / Korean agent skills for Claude Code & Codex: idea → PRD/TRD → architecture → task plan → verification harness → autonomous dev loop, plus post-launch refactor, feature and bug-fix flows.",
   "version": "1.10.0",
-  "author": { "name": "FlyingTajo" }
+  "author": {
+    "name": "FlyingTajo"
+  },
+  "keywords": [
+    "korean",
+    "claude-code",
+    "claude-code-plugin",
+    "claude-skills",
+    "codex",
+    "agent-skills",
+    "ai-agents",
+    "agentic-coding",
+    "spec-driven-development",
+    "prd",
+    "trd",
+    "architecture",
+    "planning",
+    "quality-gates",
+    "e2e",
+    "development-loop",
+    "workflow"
+  ]
 }

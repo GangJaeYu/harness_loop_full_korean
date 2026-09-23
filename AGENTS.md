@@ -20,7 +20,7 @@
 | "개발 계획 세워줘", "태스크로 쪼개줘", "마스터 플랜" | `skills/plan-generator/SKILL.md` | `plan_setup/PLAN.md`·`phase-NN/`·`STATE.md`·`LOG.md` |
 | "하네스 세팅해줘", "품질 게이트", "테스트 파이프라인", "로컬 개발 환경" | `skills/harness-setup/SKILL.md` | `harness_setup/quality_gates/`·`scripts/` |
 | "하네스 업데이트해줘", "게이트 갱신", "Redis 추가됐어" | `skills/harness-update/SKILL.md` | (기존 `harness_setup/` 갱신) |
-| "개발 루프 세팅해줘", "이제 구현 시작하자", "태스크 순서 정해줘" | `skills/loop-setup/SKILL.md` | `loop_setup/LOOP.md` |
+| "개발 루프 세팅해줘", "이제 구현 시작하자", "태스크 순서 정해줘" | `skills/loop-setup/SKILL.md` | `loop_setup/LOOP.md`·`DAG.md`, 구동 스크립트 |
 | "루프 업데이트해줘", "병렬 폭 바꾸자", "루프가 자꾸 같은 데서 멈춰" | `skills/loop-update/SKILL.md` | (기존 `LOOP.md` 갱신) |
 | 문서 없이 만든 코드를 이 절차에 올리고 싶을 때, "이 코드 문서화해줘" | `skills/code-to-docs/SKILL.md` | as-is `docs/`·phase-01 현행 고정·하네스·루프 |
 | 완료된 프로젝트에서 "리팩토링하자", "라이브러리 올리자" | `skills/refactor-plan/SKILL.md` | 후미 `## 리팩토링 N` 절·`phase-NN-refactor-*` |
@@ -45,7 +45,7 @@ IDEA → PRD → TRD → ARCHITECTURE → PLAN(phase·task) → HARNESS(게이�
 
 `loop_setup/LOOP.md` 가 만들어졌으면 **그 뒤로는 이 색인이 아니라 `LOOP.md` 가 안내한다.**
 세션을 열 때 `LOOP.md` 와 `plan_setup/STATE.md` 를 읽고 거기 적힌 사이클을 따른다.
-구동기가 지시문으로 토막(구현·검증·반영·코디네이터)을 지정했으면 그 지시문이 먼저다.
+구동 스크립트가 지시문으로 토막(구현·검증·반영·코디네이터)을 지정했으면 그 지시문이 먼저다. 검증 토막은 받은 지시문만 따른다.
 
 `LOOP.md` 가 정한 것 중 특히 지킬 것 넷이다.
 
@@ -54,4 +54,4 @@ IDEA → PRD → TRD → ARCHITECTURE → PLAN(phase·task) → HARNESS(게이�
   같은 세션이 구현하고 판정하면 그 게이트는 이름만 남는다
 - **게이트 실패는 고치기 전에 분류한다.** 진짜 결함만 코드를 고치고, 나머지는 하네스나 태스크 문서로 간다
 - **병렬에서 문서는 코디네이터만 쓴다.** 워커는 `STATE.md`·`LOG.md`·태스크 문서·하네스 문서를 쓰지 않고
-  주 트리에서 읽기만 하며, 기록할 것은 출력 블록으로 넘긴다
+  코디네이터 트리에서 읽기만 하며, 기록할 것은 출력 블록으로 넘긴다
