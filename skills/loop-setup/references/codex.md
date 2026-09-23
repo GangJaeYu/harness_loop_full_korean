@@ -72,12 +72,12 @@ codex exec -m <8절 반영 행> -c model_reasoning_effort="<8절 반영 행>" "<
 강도 값(`low|medium|high|xhigh|max|ultra`)은 설치된 버전의 모델 문서에서 확인한다 — 코덱스 모델은 몇 달 단위로 바뀌고 은퇴하므로 이름을 스크립트에 박지 않고 LOOP.md 8절 표에서 읽는다.
 역할별 모델은 번호 목록 하나로 묻는다 — A) 추천대로 B) 전부 최상위 C) 전부 보통 D) 직접 지정. 각 선택지에 사용량 차이(폭 × 모델)를 붙인다.
 승인·샌드박스는 `-a on-request|never` 와 `-s read-only|workspace-write|danger-full-access` 로 — 구현·반영은 `workspace-write`, 검증은 `read-only`. `--full-auto` 는 폐기 예정이라 쓰지 않는다.
-①-병렬의 코디네이터 자식은 8절 코디네이터 행의 모델로 띄운다.
+①-병렬·②의 코디네이터 자식과 ②의 질문 답변 자식은 8절 코디네이터 행의 모델로 띄운다.
 
 **①-병렬**은 라운드마다 코디네이터 트리에서 `codex exec "<코디네이터 지시문>"` 을 한 번 띄우고, `STATE.md` 의 `Assignments` 행마다 그 워커의 자리(슬롯 1 은 코디네이터 트리, 2 이상은 `worker-N` 트리)를 작업 디렉터리로
 구현·검증 자식을 **백그라운드로 동시에** 띄워 전부 끝날 때까지 기다린다(셸이면 `&` 와 `wait`, PowerShell 이면 `Start-Process -Wait`).
 코디네이터 트리는 세팅 때 `git worktree add <경로> -B coordinator <8절 기본 브랜치>`, 워커 트리는 `git worktree add <8절 경로> -B worker-N coordinator` 로 코디네이터가 만든다.
-슬롯 1 의 `worker-1` 은 코디네이터 트리에서 돌고 워크트리는 둘째부터다. `main` 에서는 아무것도 띄우지 않는다 — 사용자의 자리다. 재배정 직전 `git checkout coordinator && git clean -fd`, 완료마다 기본 브랜치(8절 — `main` 이 아닐 수 있다) fast-forward.
+슬롯 1 의 `worker-1` 은 코디네이터 트리에서 돌고 워크트리는 둘째부터다. `main` 에서는 아무것도 띄우지 않는다 — 사용자의 자리다. 재배정 직전 `git reset --hard coordinator && git clean -fd`, 완료마다 기본 브랜치(8절 — `main` 이 아닐 수 있다) fast-forward.
 슬롯 경로는 세팅 때 정한다 — 저장소 경로에 `OneDrive`·`Dropbox`·`iCloud`·`Google Drive` 가 들어 있으면 형제 폴더 대신 저장소 안 `.wt/worker-N`(`.gitignore` 추가)이나 동기화 밖 경로를 제안한다.
 격리 3이면 스크립트가 `e2e 대기`·검증 행을 슬롯 순서대로 돌리며 앱을 전환한다(`local-dev` 내리기 → 그 슬롯 트리에서 `local-dev` → e2e 명령 → 검증 자식).
 `DAG.md` 는 `harness_setup/scripts/dag-render.*` 로 만든다 — frontmatter 만 읽는 스크립트라 프로젝트 런타임으로 쓰고 셸에서 한 번 돌려 본다. 코디네이터의 승인 범위는 `STATE.md`·`LOG.md`·태스크 문서 쓰기,
@@ -85,8 +85,13 @@ codex exec -m <8절 반영 행> -c model_reasoning_effort="<8절 반영 행>" "<
 구현 자식의 표준 출력은 `done-<ID>.txt` 로 받는다 — `TASK/STATUS/RETRY/LOG/END` 블록이고 `END` 가 없으면 중단된 것이다.
 워커 자식에게는 `plan_setup/`·`harness_setup/` 문서를 읽을 **코디네이터 트리 절대 경로**와 자기 이름(`worker-N`)을 지시문에 넣는다 — 워커 트리의 문서는 낡았다.
 
-**② 오르카**가 있으면 코디네이터 트리에서 `orca orchestration worker-start --spec "worker-N: <지시문>" --worktree current|<worker-N 워크트리> --agent codex` 로 워커를 띄운다.
-`--worktree` 는 8절 슬롯 규칙대로 — 슬롯 1 은 `current`(코디네이터 트리), 슬롯 2 이상은 `worker-N` 워크트리. `main` 에서는 띄우지 않는다.
+**② 오르카**가 있으면 구동기는 **오르카 터미널 안에서 도는 `harness_setup/scripts/loop-drive.*`** 다(LOOP.md 4절의 ② 알고리즘). 코디네이터를 대화형 세션으로 상주시키지 않는다 —
+판단은 ①-병렬과 같은 `codex exec "<코디네이터 지시문>"` 이 라운드마다 하고, 스크립트는 `orca orchestration worker-start --spec "worker-N: <지시문>" --worktree current|path:<worker-N 워크트리> --agent codex --model <8절> --json` 으로 띄우고
+`orca orchestration check --wait --types "worker_done,escalation,question" --json` 으로 받는다. 받은 배달은 처리한 뒤 다음 `check` 에 `--ack <deliveryId>` 로 확인한다.
+질문은 `codex exec "<질문 답변 지시문>"`(읽기 + `STATE.md` 쓰기만 승인)에 넘겨 첫 줄이 `답:` 이면 `orca orchestration reply --id <메시지 id> --body "<답>"` 한다.
+스크립트는 반드시 오르카 터미널 안에서 돈다 — 오르카 CLI 가 호출한 터미널을 코디네이터로 묶는다. Run ID 는 임시 폴더의 `loop-run.txt` 에 두고 재시작 때 `run-use --id` 로 이어받는다.
+워커는 출력 블록·판정 블록을 `done-<ID>.txt`·`verdict-<ID>.txt` 에 직접 쓰고 `worker_done --report-path` 로 끝낸다. 명령 표면은 세팅 때 `orca skills get orchestration` 과 `--help` 로 확인하고,
+가벼운 모델의 시험 워커 하나로 ask→reply→결과 파일→`worker_done`→`worker-release` **스모크 테스트**를 돌린다.
 오르카 화면에서 카드가 `coordinator`·`worker-1`·`worker-2` 로 보이도록 `orca worktree set --worktree <id> --display-name worker-N` 을 세팅 때 한 번 한다.
 코덱스에는 서브에이전트가 없으므로 ③은 해당 없다.
 
@@ -118,6 +123,7 @@ heredoc 은 구분자를 따옴표로 감싼다(`<<'EOF'`) — 안 그러면 `$`
    A) 예 — 구간별 폭: (표). 동시 에이전트 수 상한을 골라 주세요: (폭 최댓값) / (절반) / 1. 폭보다 큰 수는 놉니다
       격리 방식: 1) 슬롯별 환경 통째 분리(자원 N벌, local-dev 가 슬롯 변수를 받아야 함) /
                  2) DB 하나 + 슬롯별 데이터베이스·계정(권한 발급 단계 추가) / 3) 공유 자원 게이트만 직렬화(되돌리기 비용 없음)
+      추천: (테스트가 DB 를 쓰면 1 또는 2 — 격리 3에서도 unit 은 병렬로 돌아 통합 테스트가 공유 DB 에서 서로 오염된다 / 안 쓰면 3)
       local-dev 가 슬롯 변수를 읽는지 확인한 결과: (읽음 / 안 읽음 — 1·2 는 harness-update 가 먼저입니다. 3 은 병렬 이득이 unit 까지입니다)
       슬롯 경로(저장소가 동기화 폴더 아래일 때만): 저장소 안 .wt/worker-N / 동기화 밖 경로
       (오르카가 있으면) 에이전트 배치: 구현 (claude/codex), 검증 (claude/codex — 구현과 다르게 두면 분리가 강해집니다), 코디네이터 (claude/codex)

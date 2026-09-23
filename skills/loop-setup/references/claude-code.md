@@ -76,7 +76,7 @@ Windows 에서 세션의 셸 도구 이름이 `Bash` 가 아니라 `PowerShell` 
 **모델과 추론 강도는 `--model`·`--effort` 로 토막마다 준다.** 별칭(`opus`·`sonnet`·`haiku`)과 강도(`low|medium|high|xhigh|max`)는 설치된 버전의 `claude --help` 로 확인한다.
 값은 LOOP.md 8절 표에서 읽고 스크립트에 박지 않는다. 역할별 모델을 묻는 질문은 AskUserQuestion 하나로 — 선택지 넷(추천대로 / 전부 최상위 / 전부 보통 / 직접 지정)에
 `description` 으로 사용량 차이(폭 × 모델)를 적는다. "직접 지정"이면 역할마다 한 번 더 묻는다. `--max-budget-usd` 가 있으면 구현 토막에 상한을 걸어 폭주를 막을 수 있다 — 값은 사용자에게 묻는다.
-코디네이터 자식(①-병렬)은 8절 코디네이터 행의 모델로 띄운다 — 판단만 하는 자리에 보통 급을 쓰면 배정·병합에서 흔들린다.
+코디네이터 자식(①-병렬·②)과 ②의 질문 답변 자식은 8절 코디네이터 행의 모델로 띄운다 — 판단만 하는 자리에 보통 급을 쓰면 배정·병합에서 흔들린다.
 
 확인된 동작 셋 — 허용 목록 안의 도구는 승인 없이 돌고, 목록 밖의 쓰기는 **멈추지 않고 거부로 끝나며**
 (자식에게 "거부되면 그렇게 적고 종료하라"를 지시문에 둔다), 읽기 전용 셸 명령은 목록에 없어도 통과한다.
@@ -86,7 +86,7 @@ Windows 에서 세션의 셸 도구 이름이 `Bash` 가 아니라 `PowerShell` 
 **①-병렬**은 라운드마다 코디네이터 트리에서 `claude -p "<코디네이터 지시문>"` 을 한 번 띄우고, `STATE.md` 의 `Assignments` 행마다 그 워커의 자리(슬롯 1 은 코디네이터 트리, 2 이상은 `worker-N` 트리)에서
 구현·검증 자식을 **백그라운드로 동시에** 띄워 전부 끝날 때까지 기다린다(PowerShell 이면 `Start-Process -Wait`/`Start-Job`, 셸이면 `&` 와 `wait`).
 코디네이터 트리는 세팅 때 `git worktree add <경로> -B coordinator <8절 기본 브랜치>`, 워커 트리는 `git worktree add <8절 경로> -B worker-N coordinator` 로 코디네이터가 만들고, 자식은 그 폴더를 작업 디렉터리로 받는다.
-슬롯 1 의 `worker-1` 은 코디네이터 트리에서 돌고 워크트리는 둘째부터다. `main` 에서는 아무것도 띄우지 않는다 — 사용자의 자리다. 재배정 직전 `git checkout coordinator && git clean -fd`, 완료마다 기본 브랜치(8절 — `main` 이 아닐 수 있다) fast-forward.
+슬롯 1 의 `worker-1` 은 코디네이터 트리에서 돌고 워크트리는 둘째부터다. `main` 에서는 아무것도 띄우지 않는다 — 사용자의 자리다. 재배정 직전 `git reset --hard coordinator && git clean -fd`, 완료마다 기본 브랜치(8절 — `main` 이 아닐 수 있다) fast-forward.
 슬롯 경로는 세팅 때 정한다 — 저장소 경로에 `OneDrive`·`Dropbox`·`iCloud`·`Google Drive` 가 들어 있으면 형제 폴더 대신 저장소 안 `.wt/worker-N`(`.gitignore` 추가)이나 동기화 밖 경로를 제안한다.
 격리 3이면 스크립트가 `e2e 대기`·검증 행을 슬롯 순서대로 돌리며 앱을 전환한다(`local-dev -Down` → 그 슬롯 트리에서 `local-dev` → e2e 명령 → 검증 자식). 판단이 없는 일이라 스크립트 몫이다.
 `DAG.md` 는 `harness_setup/scripts/dag-render.*` 로 만든다 — frontmatter 만 읽는 스크립트라 프로젝트 런타임(Node 면 `.mjs`, 아니면 PowerShell/셸)으로 쓰고 Bash 로 한 번 돌려 본다.
@@ -94,10 +94,17 @@ Windows 에서 세션의 셸 도구 이름이 `Bash` 가 아니라 `PowerShell` 
 구현 자식의 표준 출력은 `done-<ID>.txt` 로 받는다 — `TASK/STATUS/RETRY/LOG/END` 블록이고 `END` 가 없으면 중단된 것이다.
 워커 자식에게는 `plan_setup/`·`harness_setup/` 문서를 읽을 **코디네이터 트리 절대 경로**와 자기 이름(`worker-N`)을 지시문에 넣는다 — 워커 트리의 문서는 낡았다.
 
-**② 오르카**가 있으면 코디네이터 트리에서 `orca orchestration worker-start --spec "worker-N: <지시문>" --worktree current|<worker-N 워크트리> --agent claude` 로 워커를 띄우고
-`check --wait --types "worker_done,question"` 으로 받는다. `--worktree` 는 8절 슬롯 규칙대로 — 슬롯 1 은 `current`(코디네이터 트리), 슬롯 2 이상은 `worker-N` 워크트리. `main` 에서는 띄우지 않는다.
-오르카 화면에서 카드가 `coordinator`·`worker-1`·`worker-2` 로 보이도록 `orca worktree set --worktree <id> --display-name worker-N` 을 세팅 때 한 번 한다. 워커의 `ask` 가 코디네이터에게 블로킹으로 오므로
-미활성 승인 같은 질문을 사람 대신 코디네이터가 답할 수 있다. 명령 표면은 `orca skills get orchestration` 으로 그 버전 것을 읽는다.
+**② 오르카**가 있으면 구동기는 **오르카 터미널 안에서 도는 `harness_setup/scripts/loop-drive.*`** 다(LOOP.md 4절의 ② 알고리즘). 코디네이터를 대화형 세션으로 상주시키지 않는다 —
+판단은 ①-병렬과 같은 `claude -p "<코디네이터 지시문>"` 이 라운드마다 하고, 스크립트는 `orca orchestration worker-start --spec "worker-N: <지시문>" --worktree current|path:<worker-N 워크트리> --agent claude --model <8절> --json` 으로 띄우고
+`orca orchestration check --wait --types "worker_done,escalation,question" --timeout-ms <8절> --json` 으로 받는다(PowerShell 이면 `--types` 값을 따옴표로 감싼다). 받은 배달은 처리한 뒤 다음 `check` 에 `--ack <deliveryId>` 로 확인한다.
+응답 JSON 에서 쓰는 값은 `result.deliveryId`·`result.messages[].type`·`id`·`body`·`payload`(문자열 JSON — `taskId`·`dispatchId`·`outcome`)·`result.timedOut` 이다. 오르카 버전마다 표면이 바뀔 수 있으므로 세팅 때 `orca skills get orchestration` 과 `orca orchestration <명령> --help` 로 확인한다.
+질문(`question`·`escalation`)은 `claude -p "<질문 답변 지시문>" --allowedTools "Read,Edit(plan_setup/STATE.md)"` 에 넘겨 첫 줄이 `답:` 이면 `orca orchestration reply --id <메시지 id> --body "<답>"` 한다.
+오르카 CLI 는 호출한 터미널을 코디네이터로 묶으므로 스크립트는 반드시 오르카 터미널 안에서 돈다(`ORCA_TERMINAL_HANDLE` 이 있어야 한다. 없으면 `no_active_sender_terminal`).
+Run ID 는 OS 임시 폴더의 `loop-run.txt` 에 두고 재시작 때 `orca orchestration run-use --id <Run>` 으로 이어받는다. 워커는 대화형 에이전트라 결과를 표준 출력으로 넘길 수 없으므로
+출력 블록·판정 블록을 `done-<ID>.txt`·`verdict-<ID>.txt` 에 직접 쓰고 `worker_done --report-path` 로 끝내게 지시문에 덧붙인다. 워커의 모델은 `--model`(오르카가 받는 공급자 모델 id)·`--effort` 로 주고, 응답의 `launch.effective` 로 실제 값을 확인한다.
+세팅 때 **스모크 테스트**를 한다 — `orca terminal create --worktree current --title "loop smoke" --command "<loop-drive 스모크 옵션>"` 으로 가벼운 모델의 시험 워커 하나를 띄워
+ask→reply→결과 파일→`worker_done`→`worker-release` 가 도는지 본다(2026-09-23 이 저장소에서 1분 안쪽으로 확인한 흐름이다).
+오르카 화면에서 카드가 `coordinator`·`worker-1`·`worker-2` 로 보이도록 `orca worktree set --worktree <id> --display-name worker-N` 을 세팅 때 한 번 한다.
 
 **③ 서브에이전트**는 상위 세션이 Agent 도구로 구현·검증을 각각 띄우는 것이다. 클로드 코드에서만 된다.
 Agent 도구의 `model` 인자(`opus`·`sonnet`·`haiku`)에 8절 표의 값을 준다. 상위 세션이 코디네이터이므로 상위 세션 자체를 코디네이터 급으로 연다.
@@ -120,8 +127,8 @@ AskUserQuestion 을 쓰는 자리는 둘이다. **한 번씩만 묻는다.** 첫
 
 **병렬 운용 (11단계) — 질문 셋.** ①병렬로 갈 것인가: 기본(첫 선택지, Recommended)은 **예**. 아니요면 ①-단일로 적고 격리는 미결로 남긴다.
 ②동시 에이전트 수 상한: 구간별 폭 표를 먼저 보여 주고 폭의 최댓값·그 절반·1 같은 선택지를 준다 — 폭보다 큰 수는 논다는 것을 `description` 에 적는다.
-③격리 방식: 슬롯별 환경 통째 분리 / DB 하나 + 슬롯별 데이터베이스·계정 / 앱 쓰는 게이트만 직렬화. `option.description` 에 **되돌리기 비용**과
-`local-dev` 가 슬롯 변수를 읽는지 확인한 결과를 적는다 — 안 읽으면 1·2는 `harness-update` 가 먼저다. 3은 "병렬 이득이 구현·lint·unit 까지, e2e 와 검증은 슬롯 순서대로"를 적는다.
+③격리 방식: 슬롯별 환경 통째 분리 / DB 하나 + 슬롯별 데이터베이스·계정 / 앱 쓰는 게이트만 직렬화. **테스트가 DB 를 쓰면 1·2 중 하나에 (Recommended)** 를 붙여 첫째로 둔다. `option.description` 에 **되돌리기 비용**과
+`local-dev` 가 슬롯 변수를 읽는지 확인한 결과를 적는다 — 안 읽으면 1·2는 `harness-update` 가 먼저다. 3은 "병렬 이득이 구현·lint·unit 까지, e2e 와 검증은 슬롯 순서대로. 단 unit 은 병렬로 돌므로 통합 테스트가 공유 DB 를 쓰면 서로 오염된다"를 적는다.
 ④슬롯 경로(저장소가 동기화 폴더 아래일 때만 묻는다): 저장소 안 `.wt/worker-N` / 동기화 밖 경로. 아니면 형제 폴더를 기본으로 적고 묻지 않는다.
 ②에서는 에이전트 배치도 같이 받는다 — 구현·검증·코디네이터 각각 claude/codex. 검증을 구현과 다른 에이전트로 두는 선택지를 첫째로 둔다.
 DAG 그림은 묻지 않고 그려서 보고에서 검토를 요청한다.
