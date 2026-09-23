@@ -22,6 +22,10 @@
 | "하네스 업데이트해줘", "게이트 갱신", "Redis 추가됐어" | `skills/harness-update/SKILL.md` | (기존 `harness_setup/` 갱신) |
 | "개발 루프 세팅해줘", "이제 구현 시작하자", "태스크 순서 정해줘" | `skills/loop-setup/SKILL.md` | `loop_setup/LOOP.md` |
 | "루프 업데이트해줘", "병렬 폭 바꾸자", "루프가 자꾸 같은 데서 멈춰" | `skills/loop-update/SKILL.md` | (기존 `LOOP.md` 갱신) |
+| 문서 없이 만든 코드를 이 절차에 올리고 싶을 때, "이 코드 문서화해줘" | `skills/code-to-docs/SKILL.md` | as-is `docs/`·phase-01 현행 고정·하네스·루프 |
+| 완료된 프로젝트에서 "리팩토링하자", "라이브러리 올리자" | `skills/refactor-plan/SKILL.md` | 후미 `## 리팩토링 N` 절·`phase-NN-refactor-*` |
+| 완료된 프로젝트에서 "xx 기능 추가하려는데" | `skills/feature-add/SKILL.md` | 후미 `## 추가 N` 절·`phase-NN-<기능>` |
+| 완료된 프로젝트를 쓰다가 "xx 가 안 돼" (루프 중 게이트 실패는 아님) | `skills/bug-fix/SKILL.md` | 회귀 검사·`LOG.md` `### BUG-NN`·커밋 1회 |
 
 ## 순서가 있다
 
