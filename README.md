@@ -18,27 +18,34 @@
 사람은 단계마다 결과를 검토하고, 루프가 돌기 시작하면 **루프가 질문을 올릴 때만** 답합니다.
 
 ```mermaid
-%%{init: {'theme': 'base', 'themeVariables': {'fontSize': '14px', 'lineColor': '#8c959f', 'edgeLabelBackground': '#ffffff'}, 'flowchart': {'curve': 'basis', 'nodeSpacing': 24, 'rankSpacing': 26, 'padding': 10, 'subGraphTitleMargin': {'top': 6, 'bottom': 8}}}}%%
-flowchart TB
-    subgraph S1["1 · Docs and plan"]
-        A["Idea → PRD · TRD<br>→ Architecture → Master plan"]
-    end
-    subgraph S2["2 · Development loop"]
-        direction TB
-        E["Verification harness"] --> G["Implement task"] --> V{{"Gates + separate check"}}
-        V -- "FAIL · classify, then fix" --> G
-        V -- "PASS" --> H["Commit → next task"]
-    end
-    S1 -- "You review each stage" --> S2
-    classDef node fill:#f6f8fa,stroke:#d0d7de,color:#1f2328,stroke-width:1px
-    classDef key fill:#24292f,stroke:#6e7781,color:#ffffff,stroke-width:1px
-    classDef out fill:#ffffff,stroke:#24292f,color:#1f2328,stroke-width:1.5px
-    class A,E,G node
-    class V key
-    class H out
-    style S1 fill:transparent,stroke:#d0d7de,color:#8c959f
-    style S2 fill:transparent,stroke:#d0d7de,color:#8c959f
-    linkStyle 2 stroke-dasharray:4 3
+flowchart TD
+    A["PRD → TRD → Architecture → Master Plan"]
+    
+    A --> B["Phase"]
+    B --> C["Task"]
+    C --> D["Implement"]
+    D --> E{"Verify"}
+
+    E -->|FAIL| F["Fix"]
+    F --> E
+
+    E -->|PASS| G{"More Tasks?"}
+
+    G -->|YES| C
+    G -->|NO| H["Phase Complete"]
+
+    H --> I{"Next Phase?"}
+
+    I -->|YES| B
+    I -->|NO| J["Project Complete"]
+
+    classDef process fill:#e8f4ff,stroke:#1976d2,stroke-width:1.5px,color:#0d47a1;
+    classDef decision fill:#fff8e1,stroke:#f9a825,stroke-width:1.5px,color:#5d4037;
+    classDef complete fill:#e8f5e9,stroke:#43a047,stroke-width:1.5px,color:#1b5e20;
+
+    class A,B,C,D,F process;
+    class E,G,I decision;
+    class H,J complete;
 ```
 
 ## 무엇이 다른가
