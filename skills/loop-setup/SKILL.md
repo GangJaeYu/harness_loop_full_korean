@@ -513,7 +513,7 @@ Layer 4가 확정했는데, 초기에는 거의 모든 게이트가 미활성이
 | 모드 | 무엇으로 세션을 여는가 | 언제 |
 |---|---|---|
 | **① 스크립트 구동** | `claude -p "<지시문>"` / `codex exec "<지시문>"` 을 반복하는 스크립트. **단일**(세 토막을 차례로)과 **병렬**(코디네이터 자식 하나 + 슬롯마다 구현·검증 자식) 두 형태가 있다 | **오르카가 없을 때의 기본.** 두 환경에서 같다 |
-| **② 오르카 스크립트 구동** | 오르카 터미널 하나에서 도는 **구동 스크립트**가 워커를 `orca orchestration worker-start --spec "worker-N: <지시문>" --worktree <슬롯> --agent claude\|codex` 로 띄우고 `check --wait` 로 받는다. 판단은 ①-병렬과 같은 **코디네이터 자식**(`claude -p`)이 라운드마다 새로 한다 | **오르카가 있을 때의 기본.** 워커 카드·질문 응답·생존 확인을 오르카가 맡는다. 명령 표면은 `orca skills get orchestration` 으로 그 버전 것을 읽는다 |
+| **② 오르카 스크립트 구동** | 오르카 터미널 하나에서 도는 **구동 스크립트**가 워커를 `orca orchestration task-create --spec "<지시문>" --display-name "worker<N>_<태스크 ID>"` → `worker-start --task <그 ID> --worktree <슬롯> --agent claude\|codex` 로 띄우고 `check --wait` 로 받는다. 판단은 ①-병렬과 같은 **코디네이터 자식**(`claude -p`)이 라운드마다 새로 한다 | **오르카가 있을 때의 기본.** 워커 카드·질문 응답·생존 확인을 오르카가 맡는다. 명령 표면은 `orca skills get orchestration` 으로 그 버전 것을 읽는다 |
 | **③ 서브에이전트** | 상위 세션이 Agent 도구로 구현·검증 서브에이전트를 띄운다. 검증 서브에이전트의 출력을 상위 세션이 **판정 파일로 저장한 뒤** 같은 반영 절차를 밟는다 | 클로드 코드 전용 대안. 사용자가 지정할 때만 |
 
 오르카 유무는 세팅 때 확인한다(`orca --version` 같은 CLI 응답). 있으면 ②, 없으면 ①-병렬로 적고, 사용자가 병렬을 끄면 ①-단일이다.
@@ -550,7 +550,8 @@ Layer 4가 확정했는데, 초기에는 거의 모든 게이트가 미활성이
     Phase Overview 가 전부 completed 면 → 끝
     claude -p "<코디네이터 지시문>"              ← ①-병렬과 같은 지시문·허용 목록. 결과 파일 반영 → 병합 → 기록 → 배정(STATE.md 의 Assignments)
     Assignments 행 중 아직 안 띄운 행마다:
-       구현·수정·검증 → worker-start --spec "worker-N: <지시문> 태스크: <ID>" --worktree <슬롯> --agent <8절> --model <8절>
+       구현·수정·검증 → task-create --spec "worker-N: <지시문> 태스크: <ID>" --display-name "worker<N>_<ID>"(검증이면 끝에 _검증)
+                        → worker-start --task <받은 task id> --worktree <슬롯> --agent <8절> --model <8절>
                         (워커는 출력 블록·판정 블록을 (임시)/done-<ID>.txt·verdict-<ID>.txt 에 쓰고 worker_done --report-path 로 끝낸다)
        e2e 대기(격리 3) → ①-병렬과 같이 스크립트가 앱 전환 후 e2e 명령을 직접 돌린다
     check --wait --types "worker_done,escalation,question" 을 Run 에 건다 (timeout 은 체크포인트이지 실패가 아니다):
@@ -932,7 +933,7 @@ DAG 의 간선은 순서만 말한다. **간선이 없는 두 태스크가 동�
 슬롯 1(코디네이터 트리)은 코디네이터가 자기 문서를 커밋한 뒤 `git clean -fd`. 코디네이터와 `worker-1` 이 같은 트리를 쓰므로 **코디네이터는 `git add -A` 를 쓰지 않고 문서 경로만 add 한다** — 워커의 작업 중 파일이 문서 커밋에 딸려 들어가면 안 된다.
 브랜치만 되돌리면 앞 태스크가 만들다 만 파일이 남아 다음 워커의 lint 가 그것을 잡거나 자기 것으로 오인한다.
 폭이 줄어 안 쓰는 워커 트리는 지워도 되고 두어도 된다 — 두면 환경 한 벌이 남아 있으므로 `LOOP.md` 에 어느 쪽인지 적는다.
-②에서는 슬롯 1 의 워커가 `--worktree current`(코디네이터 트리), 슬롯 2 이상이 `--worktree <worker-N 워크트리>` 다. `main` 에서는 띄우지 않는다. 카드 이름은 `coordinator`·`worker-N` 으로 둔다(`orca worktree set --display-name`). `--spec` 첫 줄의 `worker-N:` 으로 같은 카드 안에서도 워커를 구별한다.
+②에서는 슬롯 1 의 워커가 `--worktree current`(코디네이터 트리), 슬롯 2 이상이 `--worktree <worker-N 워크트리>` 다. `main` 에서는 띄우지 않는다. 카드 이름은 `coordinator`·`worker-N` 으로 둔다(`orca worktree set --display-name`). **에이전트 목록에 보이는 워커 이름은 태스크를 만들 때 정한다** — `task-create --display-name "worker<N>_<태스크 ID>"`(검증 워커는 끝에 `_검증`) 뒤 `worker-start --task` 로 띄운다. `worker-start --spec` 한 번으로 띄우면 오르카가 `worker-task_<내부 ID>` 로 이름을 자동으로 붙여 어느 슬롯의 어느 태스크인지 알아볼 수 없다. (`worker-start --display-name` 은 새 워크트리를 만들 때의 워크트리 이름이라 기존 워크트리에서는 거부된다. 터미널 탭 제목은 에이전트가 덮어쓴다.)
 
 **`main` 반영은 태스크 완료마다다.** 워커 트리에서 커밋 → 코디네이터 트리에 병합 → `main` 을 코디네이터 브랜치로 fast-forward. `main` 은 항상 "검증된 최신"이라
 사용자가 중간에 봐도 반쯤 된 것이 없다. **사용자가 `main` 에 직접 커밋했으면** 코디네이터가 라운드 시작 때 `git merge <기본 브랜치>` 을 자기 트리에 먼저 한다 — 충돌이면 `질문:`.
@@ -1174,7 +1175,7 @@ project_name/harness_setup/scripts/
 | 자원 충돌 표 | 파일 겹침·공유 런타임 자원·빈 `files` 세 검사의 결과 표가 있고(0건이면 "0건"), 처리 값이 `단독`/`그룹 직렬`/`격리가 덮음` 셋 중 하나이며 공유 자원의 기본이 `그룹 직렬` | 검사한다. 전부 `단독` 이면 폭이 1로 떨어진다 |
 | 슬롯 경로 | 슬롯 워크트리 경로가 8절에 실제 값으로 있고, 저장소가 동기화 폴더 아래면 형제 폴더가 아님 | 정한다. 동기화 폴더의 형제 워크트리는 `node_modules` 를 동기화한다 |
 | 격리 3 | 격리 3이면 구현 토막이 `unit` 에서 끊기고(`STATUS: e2e 대기`) 앱 전환·e2e 직접 실행·검증이 슬롯 순서로 있음 | 채운다. 없으면 구현 워커 둘의 e2e 가 한 포트에서 충돌한다 |
-| 구동 스크립트 | `harness_setup/scripts/loop-drive.*` 가 있고 4절 알고리즘과 같으며, ①은 드라이런·②는 스모크 테스트(시험 워커의 ask/reply·결과 파일·worker_done·release)를 **실제로 돌렸음**. ②에 코디네이터가 상주하는 자리·phase 마다 코디네이터를 교체하는 명령이 0건이고, 스크립트가 오르카 터미널 안에서 돌며 재시작 시 `run-use` 로 Run 을 이어받는다고 적혀 있음 | 쓰고 돌린다. 상주 코디네이터는 폴링마다 전체 컨텍스트를 다시 읽는다 |
+| 구동 스크립트 | `harness_setup/scripts/loop-drive.*` 가 있고 4절 알고리즘과 같으며, ①은 드라이런·②는 스모크 테스트(시험 워커의 ask/reply·결과 파일·worker_done·release)를 **실제로 돌렸음**. ②에 코디네이터가 상주하는 자리·phase 마다 코디네이터를 교체하는 명령이 0건이고, ② 워커를 `task-create --display-name "worker<N>_<태스크 ID>"` → `worker-start --task` 로 띄우며, 스크립트가 오르카 터미널 안에서 돌며 재시작 시 `run-use` 로 Run 을 이어받는다고 적혀 있음 | 쓰고 돌린다. 상주 코디네이터는 폴링마다 전체 컨텍스트를 다시 읽는다 |
 | 반복 판정 | 실패 줄 형식(`- 실패: <ID> / <게이트> / <검사 ID> / <분류>`)이 고정돼 있고, 반복 판정이 **코디네이터 지시문(병렬)·반영 지시문(단일)의 한 단계**로 있으며, ②③·격리 부족이면 `질문:` 과 배정 중지, 처리 뒤 `- 반복 처리:` 줄이 있음 | 채운다. 설명 절에만 있는 트리거는 아무도 실행하지 않는다 |
 | 알림 | `알림(<주체>, ~<만료>):` 형식이고, 루프가 스스로 할 수 있는 것은 알림으로 남기지 않으며, phase 를 열 때 만료된 알림을 `질문:` 으로 모은다(0절 7번) | 채운다. 주인·기한 없는 알림은 쌓이기만 한다 |
 | 미결 시점 | 9절 미결의 `언제` 가 루프가 확인할 수 있는 시점이고, phase 를 열 때 확인한다(0절 7번) | 고친다. 확인하지 않는 판단 시점은 기본값이 굳는 것과 같다 |
@@ -1475,7 +1476,9 @@ project_name/harness_setup/scripts/
     claude -p "<코디네이터 지시문>" --allowedTools "<코디네이터 허용 목록>"        ← ①-병렬과 같다
     Assignments 가 비어 있고 Next Action 에 "배정 없음:" 이 있고 돌고 있는 워커가 없으면 → 멈춤
     Assignments 행 중 dispatch-<ID>.txt 가 없는 행마다:
-      토막 = 구현 | 수정 | 검증 → orca orchestration worker-start --spec "worker-N: <지시문> 태스크: <ID> <② 워커 덧붙임>" --worktree <슬롯>
+      토막 = 구현 | 수정 | 검증 → orca orchestration task-create --spec "worker-N: <지시문> 태스크: <ID> <② 워커 덧붙임>"
+                                   --display-name "worker<N>_<ID>"(검증이면 "worker<N>_<ID>_검증") --json → 받은 task id 로
+                                 orca orchestration worker-start --task <task id> --worktree <슬롯>
                                    --agent <8절 CLI> --model <8절 모델> [--effort <8절 강도>] --json
                                    (슬롯 1 은 current, 2 이상은 path:<worker-N 워크트리>. main 에서는 띄우지 않는다) → 받은 dispatchId 를 dispatch-<ID>.txt 에
       토막 = e2e 대기(격리 3)     → ①-병렬과 같이 스크립트가 앱 전환 후 e2e 명령을 직접 돌린다

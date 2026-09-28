@@ -4,7 +4,7 @@
 
 *A Korean agent-skill plugin for Claude Code & Codex — idea → PRD → architecture → task plan → verification harness → autonomous development loop.* ([English](README.en.md))
 
-[![version](https://img.shields.io/badge/version-1.10.0-blue)](CHANGELOG.md)
+[![version](https://img.shields.io/badge/version-1.10.1-blue)](CHANGELOG.md)
 [![license](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 [![Claude Code](https://img.shields.io/badge/Claude%20Code-plugin-8A2BE2)](#설치)
 [![Codex](https://img.shields.io/badge/Codex-plugin-10A37F)](docs/getting-started.md#코덱스)
@@ -63,7 +63,7 @@ flowchart TD
 /plugin install harness-loop-fullstack@harness-loop-fullstack
 ```
 
-버전을 고정하려면 `GangJaeYu/harness_loop_full_korean@v1.10.0` 처럼 붙입니다.
+버전을 고정하려면 `GangJaeYu/harness_loop_full_korean@v1.10.1` 처럼 붙입니다.
 
 코덱스:
 

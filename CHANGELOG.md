@@ -2,6 +2,10 @@
 
 [← README](README.md)
 
+## 1.10.1
+
+- **Orca 워커 이름**: 에이전트 목록에 워커가 `worker-task_<내부 ID>` 대신 `worker1_<태스크 ID>`(검증 워커는 끝에 `_검증`)로 보이게, 태스크를 `task-create --display-name` 으로 만든 뒤 `worker-start --task` 로 띄웁니다. 이미 세팅한 프로젝트는 `loop-update` 가 구동 스크립트를 같은 식으로 고칩니다
+
 ## 1.10.0
 
 실사용 프로젝트의 세션 기록을 집계해 나온 비용·정지 문제를 고쳤습니다.
