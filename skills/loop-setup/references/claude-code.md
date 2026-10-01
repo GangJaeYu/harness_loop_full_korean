@@ -94,7 +94,7 @@ Windows 에서 세션의 셸 도구 이름이 `Bash` 가 아니라 `PowerShell` 
 구현 자식의 표준 출력은 `done-<ID>.txt` 로 받는다 — `TASK/STATUS/RETRY/LOG/END` 블록이고 `END` 가 없으면 중단된 것이다.
 워커 자식에게는 `plan_setup/`·`harness_setup/` 문서를 읽을 **코디네이터 트리 절대 경로**와 자기 이름(`worker-N`)을 지시문에 넣는다 — 워커 트리의 문서는 낡았다.
 
-**② 오르카**가 있으면 구동기는 **오르카 터미널 안에서 도는 `harness_setup/scripts/loop-drive.*`** 다(LOOP.md 4절의 ② 알고리즘). 코디네이터를 대화형 세션으로 상주시키지 않는다 —
+**② 오르카**가 있으면 구동기는 **오르카 터미널에서 띄워 터미널 밖으로 분리해 도는 `harness_setup/scripts/loop-drive.*`** 다(LOOP.md 4절의 ② 알고리즘). 코디네이터를 대화형 세션으로 상주시키지 않는다 —
 판단은 ①-병렬과 같은 `claude -p "<코디네이터 지시문>"` 이 라운드마다 하고, 스크립트는 `orca orchestration task-create --spec "worker-N: <지시문>" --display-name "worker<N>_<태스크 ID>" --json` 으로 태스크를 만들고(에이전트 목록에 보이는 이름. 검증 워커는 끝에 `_검증`) `orca orchestration worker-start --task <그 id> --worktree path:<슬롯 트리> --agent claude --model <8절> --json` 으로 띄우고(슬롯 1 도 `path:<코디네이터 트리>` — `current` 는 그 오르카 터미널이 속한 워크트리로 풀려 `main` 에 뜰 수 있다)
 `orca orchestration check --wait --types "worker_done,escalation,question" --timeout-ms <8절> --json` 으로 받는다(PowerShell 이면 `--types` 값을 따옴표로 감싼다). 받은 배달은 처리한 뒤 다음 `check` 에 `--ack <deliveryId>` 로 확인한다.
 응답 JSON 에서 쓰는 값은 `result.deliveryId`·`result.messages[].type`·`id`·`body`·`payload`(문자열 JSON — `taskId`·`dispatchId`·`outcome`)·`result.timedOut` 이다. 오르카 버전마다 표면이 바뀔 수 있으므로 세팅 때 `orca skills get orchestration` 과 `orca orchestration <명령> --help` 로 확인한다.

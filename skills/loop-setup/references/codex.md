@@ -85,7 +85,7 @@ codex exec -m <8절 반영 행> -c model_reasoning_effort="<8절 반영 행>" "<
 구현 자식의 표준 출력은 `done-<ID>.txt` 로 받는다 — `TASK/STATUS/RETRY/LOG/END` 블록이고 `END` 가 없으면 중단된 것이다.
 워커 자식에게는 `plan_setup/`·`harness_setup/` 문서를 읽을 **코디네이터 트리 절대 경로**와 자기 이름(`worker-N`)을 지시문에 넣는다 — 워커 트리의 문서는 낡았다.
 
-**② 오르카**가 있으면 구동기는 **오르카 터미널 안에서 도는 `harness_setup/scripts/loop-drive.*`** 다(LOOP.md 4절의 ② 알고리즘). 코디네이터를 대화형 세션으로 상주시키지 않는다 —
+**② 오르카**가 있으면 구동기는 **오르카 터미널에서 띄워 터미널 밖으로 분리해 도는 `harness_setup/scripts/loop-drive.*`** 다(LOOP.md 4절의 ② 알고리즘). 코디네이터를 대화형 세션으로 상주시키지 않는다 —
 판단은 ①-병렬과 같은 `codex exec "<코디네이터 지시문>"` 이 라운드마다 하고, 스크립트는 `orca orchestration task-create --spec "worker-N: <지시문>" --display-name "worker<N>_<태스크 ID>" --json` 으로 태스크를 만들고(에이전트 목록에 보이는 이름. 검증 워커는 끝에 `_검증`) `orca orchestration worker-start --task <그 id> --worktree path:<슬롯 트리> --agent codex --model <8절> --json` 으로 띄우고(슬롯 1 도 `path:<코디네이터 트리>` — `current` 는 그 오르카 터미널이 속한 워크트리로 풀려 `main` 에 뜰 수 있다)
 `orca orchestration check --wait --types "worker_done,escalation,question" --json` 으로 받는다. 받은 배달은 처리한 뒤 다음 `check` 에 `--ack <deliveryId>` 로 확인한다.
 질문은 `codex exec "<질문 답변 지시문>"`(읽기 + `STATE.md` 쓰기만 승인)에 넘겨 첫 줄(코드 울타리·빈 줄은 건너뛰고 앞 공백·`**` 강조는 벗긴다)이 `답:` 이면 `orca orchestration reply --id <메시지 id> --body "<답>"` 한다.

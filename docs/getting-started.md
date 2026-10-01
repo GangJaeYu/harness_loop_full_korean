@@ -37,7 +37,7 @@ codex plugin add harness-loop-fullstack@harness-loop-fullstack  # 플러그인 �
 
 ### 버전 고정
 
-두 호스트 모두 저장소 뒤에 `@` 로 붙입니다 — `GangJaeYu/harness_loop_full_korean@v1.11.0`(태그), `...@main`(브랜치).
+두 호스트 모두 저장소 뒤에 `@` 로 붙입니다 — `GangJaeYu/harness_loop_full_korean@v1.11.1`(태그), `...@main`(브랜치).
 
 ### 플러그인 없이
 
