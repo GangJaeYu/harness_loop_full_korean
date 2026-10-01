@@ -37,6 +37,7 @@ grep -H '^id:\|^status:\|^depends_on:\|^files:' plan_setup/phase-*/phase-*-tasks
 여기서 순환·미존재 참조·`files` 겹침을 확인하고, 층별로 나눠 **구간별 폭**을 낸다.
 `loop-setup` 이 처음 잰 숫자는 그때의 태스크 목록 기준이라, 태스크가 바뀌면 그대로 두면 안 된다.
 **폭이 틀리면 "넷으로 돌리자"는 결정이 근거 없이 유지된다.**
+폭은 동시 수 상한을 고르는 근거이지 배정의 근거가 아니다 — 코디네이터는 매 라운드 `dag-render --ready`(지금의 `completed` 로 다시 센 진입 차수)로 배정한다. 옛 `dag-render` 에 `--ready` 가 없으면 더한다.
 
 Explore 서브에이전트에게 frontmatter 를 표로 뽑게 해도 된다. 다만 **무엇을 고칠지의 판단은 직접 한다.**
 

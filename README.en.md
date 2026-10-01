@@ -2,7 +2,7 @@
 
 **An agent-skill plugin for Claude Code and Codex that takes a one-line idea through documents, a task plan, a verification harness, and an autonomous development loop.**
 
-[![version](https://img.shields.io/badge/version-1.10.1-blue)](CHANGELOG.md)
+[![version](https://img.shields.io/badge/version-1.11.0-blue)](CHANGELOG.md)
 [![license](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 [![Claude Code](https://img.shields.io/badge/Claude%20Code-plugin-8A2BE2)](#install)
 [![Codex](https://img.shields.io/badge/Codex-plugin-10A37F)](#install)
@@ -67,7 +67,7 @@ codex plugin marketplace add GangJaeYu/harness_loop_full_korean
 codex plugin add harness-loop-fullstack@harness-loop-fullstack
 ```
 
-Pin a version with `GangJaeYu/harness_loop_full_korean@v1.10.1` (both hosts). Plugin-free setup is in [Getting started](docs/getting-started.md) (Korean).
+Pin a version with `GangJaeYu/harness_loop_full_korean@v1.11.0` (both hosts). Plugin-free setup is in [Getting started](docs/getting-started.md) (Korean).
 
 **Requirements**: a git repository and the Claude Code (or Codex) CLI. For the loop stage, depending on your stack: **Docker** (DB and other services), **Node + Playwright** (e2e), and PowerShell 7 on Windows. [Orca](docs/loop.md) (an agent development environment) is optional for parallel runs.
 

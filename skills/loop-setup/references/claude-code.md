@@ -88,20 +88,25 @@ Windows 에서 세션의 셸 도구 이름이 `Bash` 가 아니라 `PowerShell` 
 코디네이터 트리는 세팅 때 `git worktree add <경로> -B coordinator <8절 기본 브랜치>`, 워커 트리는 `git worktree add <8절 경로> -B worker-N coordinator` 로 코디네이터가 만들고, 자식은 그 폴더를 작업 디렉터리로 받는다.
 슬롯 1 의 `worker-1` 은 코디네이터 트리에서 돌고 워크트리는 둘째부터다. `main` 에서는 아무것도 띄우지 않는다 — 사용자의 자리다. 재배정 직전 `git reset --hard coordinator && git clean -fd`, 완료마다 기본 브랜치(8절 — `main` 이 아닐 수 있다) fast-forward.
 슬롯 경로는 세팅 때 정한다 — 저장소 경로에 `OneDrive`·`Dropbox`·`iCloud`·`Google Drive` 가 들어 있으면 형제 폴더 대신 저장소 안 `.wt/worker-N`(`.gitignore` 추가)이나 동기화 밖 경로를 제안한다.
-격리 3이면 스크립트가 `e2e 대기`·검증 행을 슬롯 순서대로 돌리며 앱을 전환한다(`local-dev -Down` → 그 슬롯 트리에서 `local-dev` → e2e 명령 → 검증 자식). 판단이 없는 일이라 스크립트 몫이다.
-`DAG.md` 는 `harness_setup/scripts/dag-render.*` 로 만든다 — frontmatter 만 읽는 스크립트라 프로젝트 런타임(Node 면 `.mjs`, 아니면 PowerShell/셸)으로 쓰고 Bash 로 한 번 돌려 본다.
-코디네이터 허용 목록은 `Read,Write,Edit,Bash(git add:*),Bash(git commit:*),Bash(git merge:*),Bash(git worktree:*),Bash(git checkout:*),Bash(git clean:*),Bash(<local-dev 경로>:*),Bash(rm <결과 파일 경로>)` 이고 코드 수정 도구는 주지 않는다. 워커에는 `git clean`·`git merge` 를 주지 않는다.
+격리 3이면 스크립트가 `e2e 대기`·검증 행을 슬롯 순서대로 돌리며 앱을 전환한다(`local-dev -Down` → 그 슬롯 트리에서 `local-dev` → e2e 명령 → 검증 자식). 판단이 없는 일이라 스크립트 몫이다. ②에서는 검증 워커가 비동기라 한 번에 하나만 띄우고, 도는 동안 코디네이터 자식·e2e·앱 전환을 미룬다(`worker_done` 처리·ack 는 미루지 않는다). 행 띄우기는 결과 파일이 남은 행을 건너뛴다.
+`DAG.md` 는 `harness_setup/scripts/dag-render.*` 로 만든다 — frontmatter 만 읽는 스크립트라 프로젝트 런타임(Node 면 `.mjs`, 아니면 PowerShell/셸)으로 쓰고 Bash 로 한 번 돌려 본다(`--ready` 도).
+코디네이터 허용 목록은 `Read,Write,Edit,Bash(git add:*),Bash(git commit:*),Bash(git merge:*),Bash(git worktree:*),Bash(git checkout:*),Bash(git clean:*),Bash(<local-dev 경로>:*),Bash(<dag-render 실행 명령> --ready),Bash(rm <결과 파일 경로>)` 이고(`dag-render --ready` 는 배정 단계가 매 라운드 부른다 — 빠지면 거부로 끝난다. `:*` 로 열면 옵션 없는 실행이 `DAG.md` 를 다시 쓴다) 코드 수정 도구는 주지 않는다. 결과 파일·판정 파일은 작업 폴더 밖 임시 폴더라 허용 목록만으로는 지울 수 없다 — 그것을 다루는 자식(반영·코디네이터·질문 답변)에는 `--add-dir <임시>` 를 함께 준다. 워커에는 `git clean`·`git merge` 를 주지 않는다.
 구현 자식의 표준 출력은 `done-<ID>.txt` 로 받는다 — `TASK/STATUS/RETRY/LOG/END` 블록이고 `END` 가 없으면 중단된 것이다.
 워커 자식에게는 `plan_setup/`·`harness_setup/` 문서를 읽을 **코디네이터 트리 절대 경로**와 자기 이름(`worker-N`)을 지시문에 넣는다 — 워커 트리의 문서는 낡았다.
 
 **② 오르카**가 있으면 구동기는 **오르카 터미널 안에서 도는 `harness_setup/scripts/loop-drive.*`** 다(LOOP.md 4절의 ② 알고리즘). 코디네이터를 대화형 세션으로 상주시키지 않는다 —
-판단은 ①-병렬과 같은 `claude -p "<코디네이터 지시문>"` 이 라운드마다 하고, 스크립트는 `orca orchestration task-create --spec "worker-N: <지시문>" --display-name "worker<N>_<태스크 ID>" --json` 으로 태스크를 만들고(에이전트 목록에 보이는 이름. 검증 워커는 끝에 `_검증`) `orca orchestration worker-start --task <그 id> --worktree current|path:<worker-N 워크트리> --agent claude --model <8절> --json` 으로 띄우고
+판단은 ①-병렬과 같은 `claude -p "<코디네이터 지시문>"` 이 라운드마다 하고, 스크립트는 `orca orchestration task-create --spec "worker-N: <지시문>" --display-name "worker<N>_<태스크 ID>" --json` 으로 태스크를 만들고(에이전트 목록에 보이는 이름. 검증 워커는 끝에 `_검증`) `orca orchestration worker-start --task <그 id> --worktree path:<슬롯 트리> --agent claude --model <8절> --json` 으로 띄우고(슬롯 1 도 `path:<코디네이터 트리>` — `current` 는 그 오르카 터미널이 속한 워크트리로 풀려 `main` 에 뜰 수 있다)
 `orca orchestration check --wait --types "worker_done,escalation,question" --timeout-ms <8절> --json` 으로 받는다(PowerShell 이면 `--types` 값을 따옴표로 감싼다). 받은 배달은 처리한 뒤 다음 `check` 에 `--ack <deliveryId>` 로 확인한다.
 응답 JSON 에서 쓰는 값은 `result.deliveryId`·`result.messages[].type`·`id`·`body`·`payload`(문자열 JSON — `taskId`·`dispatchId`·`outcome`)·`result.timedOut` 이다. 오르카 버전마다 표면이 바뀔 수 있으므로 세팅 때 `orca skills get orchestration` 과 `orca orchestration <명령> --help` 로 확인한다.
-질문(`question`·`escalation`)은 `claude -p "<질문 답변 지시문>" --allowedTools "Read,Edit(plan_setup/STATE.md)"` 에 넘겨 첫 줄이 `답:` 이면 `orca orchestration reply --id <메시지 id> --body "<답>"` 한다.
-오르카 CLI 는 호출한 터미널을 코디네이터로 묶으므로 스크립트는 반드시 오르카 터미널 안에서 돈다(`ORCA_TERMINAL_HANDLE` 이 있어야 한다. 없으면 `no_active_sender_terminal`).
+질문(`question`·`escalation`)은 `claude -p "<질문 답변 지시문>" --allowedTools "Read,Edit(plan_setup/STATE.md)" --add-dir <임시>` 에 넘겨 첫 줄(코드 울타리·빈 줄은 건너뛰고 앞 공백·`**` 강조는 벗긴다)이 `답:` 이면 `orca orchestration reply --id <메시지 id> --body "<답>"` 한다.
+오르카 CLI 는 호출한 터미널을 코디네이터로 묶으므로 스크립트는 반드시 오르카 터미널에서 띄운다(`ORCA_TERMINAL_HANDLE` 이 있어야 한다. 없으면 `no_active_sender_terminal`).
+띄운 뒤에는 **터미널 프로세스 밖으로 자신을 분리한다** — Windows 는 WMI `Win32_Process.Create`(창 숨김), macOS·Linux 는 `setsid nohup`. `Start-Process` 자식은 터미널을 닫을 때 함께 죽고,
+자기 환경에 `ORCA_*` 를 가진 프로세스는 오르카가 정리하므로 환경은 파일(`loop-env.json`)로 넘겨 `ORCA_*` 를 orca 호출에만 붙인다(2026-10-01 탐침 — 닫힌 터미널의 바인딩으로 `check` 가 계속 된다).
+밖의 감시 `loop-watch.*` 도 같은 방식으로, `ORCA_*` 없이 띄운다(`worker-show`·`worker-list --run`·`inbox` 는 `ORCA_*` 없이 된다). 알림은 `loop-alerts.log` 한 줄과 Windows 토스트(모듈 없이 Windows PowerShell 5.1 — `pwsh` 7 에는 WinRT 투영이 없다)·`osascript`·`notify-send`.
+깨우기 판정(4절 [감시 3])의 전사는 `orca orchestration worker-read --dispatch <ID> --source transcript --json`(메시지 50개씩, `cursor` 로 이어 읽는다)이고, 백그라운드 완료 알림 판정(①)만 Claude Code 의 세션 파일
+`~/.claude/projects/<워커 트리 경로의 구분자·비ASCII 를 - 로>/<세션>.jsonl` 의 `queue-operation`(enqueue·dequeue·remove)을 본다 — 첫 사용자 메시지에 그 dispatch ID 가 정확히 든 파일만 고른다.
 Run ID 는 OS 임시 폴더의 `loop-run.txt` 에 두고 재시작 때 `orca orchestration run-use --id <Run>` 으로 이어받는다. 워커는 대화형 에이전트라 결과를 표준 출력으로 넘길 수 없으므로
-출력 블록·판정 블록을 `done-<ID>.txt`·`verdict-<ID>.txt` 에 직접 쓰고 `worker_done --report-path` 로 끝내게 지시문에 덧붙인다. 워커의 모델은 `--model`(오르카가 받는 공급자 모델 id)·`--effort` 로 주고, 응답의 `launch.effective` 로 실제 값을 확인한다.
+출력 블록·판정 블록을 `done-<ID>.txt`·`verdict-<ID>.txt` 에 직접 쓰고 `worker_done --report-path` 로 끝내게 지시문에 덧붙인다. 같은 덧붙임에 **`ask` 는 포그라운드(Bash timeout 600000, `--timeout-ms 540000`), 시간 초과면 `ask --resume <같은 ID>`, 연결이 끊겨 끝나도(오르카 재시작) 30초 뒤 `ask --resume`** 을 넣는다 — Claude Code 는 600초를 넘긴 명령을 백그라운드로 옮기고, 백그라운드 완료 알림을 놓친 워커는 잠든다. 워커의 모델은 `--model`(오르카가 받는 공급자 모델 id)·`--effort` 로 주고, 응답의 `launch.effective` 로 실제 값을 확인한다.
 세팅 때 **스모크 테스트**를 한다 — `orca terminal create --worktree current --title "loop smoke" --command "<loop-drive 스모크 옵션>"` 으로 가벼운 모델의 시험 워커 하나를 띄워
 ask→reply→결과 파일→`worker_done`→`worker-release` 가 도는지 본다(2026-09-23 이 저장소에서 1분 안쪽으로 확인한 흐름이다).
 오르카 화면에서 카드가 `coordinator`·`worker-1`·`worker-2` 로 보이도록 `orca worktree set --worktree <id> --display-name worker-N` 을 세팅 때 한 번 한다.
@@ -109,7 +114,7 @@ ask→reply→결과 파일→`worker_done`→`worker-release` 가 도는지 본
 **③ 서브에이전트**는 상위 세션이 Agent 도구로 구현·검증을 각각 띄우는 것이다. 클로드 코드에서만 된다.
 Agent 도구의 `model` 인자(`opus`·`sonnet`·`haiku`)에 8절 표의 값을 준다. 상위 세션이 코디네이터이므로 상위 세션 자체를 코디네이터 급으로 연다.
 
-어느 모드든 **검증 세션은 `STATE.md`·`LOG.md` 를 쓰지 않는다.** 판정 블록을 출력하고, 옮기는 것은 구동기다.
+어느 모드든 **검증 세션은 `STATE.md`·`LOG.md` 를 쓰지 않는다.** 판정 블록을 출력하고, `STATE.md`·`LOG.md` 로 옮기는 것은 반영 토막(①-단일 반영 자식·병렬 코디네이터 자식·③ 상위 세션)이다. 구동기는 판정을 파일로 받아 넘길 뿐이다.
 
 ## 파일 작성
 

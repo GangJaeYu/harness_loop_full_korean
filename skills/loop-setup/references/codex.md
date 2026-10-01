@@ -79,23 +79,25 @@ codex exec -m <8절 반영 행> -c model_reasoning_effort="<8절 반영 행>" "<
 코디네이터 트리는 세팅 때 `git worktree add <경로> -B coordinator <8절 기본 브랜치>`, 워커 트리는 `git worktree add <8절 경로> -B worker-N coordinator` 로 코디네이터가 만든다.
 슬롯 1 의 `worker-1` 은 코디네이터 트리에서 돌고 워크트리는 둘째부터다. `main` 에서는 아무것도 띄우지 않는다 — 사용자의 자리다. 재배정 직전 `git reset --hard coordinator && git clean -fd`, 완료마다 기본 브랜치(8절 — `main` 이 아닐 수 있다) fast-forward.
 슬롯 경로는 세팅 때 정한다 — 저장소 경로에 `OneDrive`·`Dropbox`·`iCloud`·`Google Drive` 가 들어 있으면 형제 폴더 대신 저장소 안 `.wt/worker-N`(`.gitignore` 추가)이나 동기화 밖 경로를 제안한다.
-격리 3이면 스크립트가 `e2e 대기`·검증 행을 슬롯 순서대로 돌리며 앱을 전환한다(`local-dev` 내리기 → 그 슬롯 트리에서 `local-dev` → e2e 명령 → 검증 자식).
-`DAG.md` 는 `harness_setup/scripts/dag-render.*` 로 만든다 — frontmatter 만 읽는 스크립트라 프로젝트 런타임으로 쓰고 셸에서 한 번 돌려 본다. 코디네이터의 승인 범위는 `STATE.md`·`LOG.md`·태스크 문서 쓰기,
-`local-dev`, `git add`·`commit`·`merge`·`worktree`·`checkout`·`clean`, 결과 파일 삭제이고 코드 수정은 주지 않는다. 워커에는 `git clean`·`git merge` 를 주지 않는다.
+격리 3이면 스크립트가 `e2e 대기`·검증 행을 슬롯 순서대로 돌리며 앱을 전환한다(`local-dev` 내리기 → 그 슬롯 트리에서 `local-dev` → e2e 명령 → 검증 자식). ②에서는 검증 워커가 비동기라 한 번에 하나만 띄우고, 도는 동안 코디네이터 자식·e2e·앱 전환을 미룬다(`worker_done` 처리·ack 는 미루지 않는다). 행 띄우기는 결과 파일이 남은 행을 건너뛴다.
+`DAG.md` 는 `harness_setup/scripts/dag-render.*` 로 만든다 — frontmatter 만 읽는 스크립트라 프로젝트 런타임으로 쓰고 셸에서 한 번 돌려 본다(`--ready` 도). 코디네이터의 승인 범위는 `STATE.md`·`LOG.md`·태스크 문서 쓰기,
+`local-dev`, `dag-render --ready`(배정 단계가 매 라운드 부른다), `git add`·`commit`·`merge`·`worktree`·`checkout`·`clean`, 결과 파일 삭제이고 코드 수정은 주지 않는다. 결과 파일·판정 파일은 작업 폴더 밖 임시 폴더라 그것을 다루는 자식(반영·코디네이터·질문 답변)에는 그 폴더를 쓰기 가능하게 여는 옵션을 준다(`codex exec --add-dir <임시>` — 세팅 때 `codex exec --help` 로 그 버전의 이름을 확인한다). 워커에는 `git clean`·`git merge` 를 주지 않는다.
 구현 자식의 표준 출력은 `done-<ID>.txt` 로 받는다 — `TASK/STATUS/RETRY/LOG/END` 블록이고 `END` 가 없으면 중단된 것이다.
 워커 자식에게는 `plan_setup/`·`harness_setup/` 문서를 읽을 **코디네이터 트리 절대 경로**와 자기 이름(`worker-N`)을 지시문에 넣는다 — 워커 트리의 문서는 낡았다.
 
 **② 오르카**가 있으면 구동기는 **오르카 터미널 안에서 도는 `harness_setup/scripts/loop-drive.*`** 다(LOOP.md 4절의 ② 알고리즘). 코디네이터를 대화형 세션으로 상주시키지 않는다 —
-판단은 ①-병렬과 같은 `codex exec "<코디네이터 지시문>"` 이 라운드마다 하고, 스크립트는 `orca orchestration task-create --spec "worker-N: <지시문>" --display-name "worker<N>_<태스크 ID>" --json` 으로 태스크를 만들고(에이전트 목록에 보이는 이름. 검증 워커는 끝에 `_검증`) `orca orchestration worker-start --task <그 id> --worktree current|path:<worker-N 워크트리> --agent codex --model <8절> --json` 으로 띄우고
+판단은 ①-병렬과 같은 `codex exec "<코디네이터 지시문>"` 이 라운드마다 하고, 스크립트는 `orca orchestration task-create --spec "worker-N: <지시문>" --display-name "worker<N>_<태스크 ID>" --json` 으로 태스크를 만들고(에이전트 목록에 보이는 이름. 검증 워커는 끝에 `_검증`) `orca orchestration worker-start --task <그 id> --worktree path:<슬롯 트리> --agent codex --model <8절> --json` 으로 띄우고(슬롯 1 도 `path:<코디네이터 트리>` — `current` 는 그 오르카 터미널이 속한 워크트리로 풀려 `main` 에 뜰 수 있다)
 `orca orchestration check --wait --types "worker_done,escalation,question" --json` 으로 받는다. 받은 배달은 처리한 뒤 다음 `check` 에 `--ack <deliveryId>` 로 확인한다.
-질문은 `codex exec "<질문 답변 지시문>"`(읽기 + `STATE.md` 쓰기만 승인)에 넘겨 첫 줄이 `답:` 이면 `orca orchestration reply --id <메시지 id> --body "<답>"` 한다.
-스크립트는 반드시 오르카 터미널 안에서 돈다 — 오르카 CLI 가 호출한 터미널을 코디네이터로 묶는다. Run ID 는 임시 폴더의 `loop-run.txt` 에 두고 재시작 때 `run-use --id` 로 이어받는다.
-워커는 출력 블록·판정 블록을 `done-<ID>.txt`·`verdict-<ID>.txt` 에 직접 쓰고 `worker_done --report-path` 로 끝낸다. 명령 표면은 세팅 때 `orca skills get orchestration` 과 `--help` 로 확인하고,
+질문은 `codex exec "<질문 답변 지시문>"`(읽기 + `STATE.md` 쓰기만 승인)에 넘겨 첫 줄(코드 울타리·빈 줄은 건너뛰고 앞 공백·`**` 강조는 벗긴다)이 `답:` 이면 `orca orchestration reply --id <메시지 id> --body "<답>"` 한다.
+스크립트는 반드시 오르카 터미널에서 띄운다 — 오르카 CLI 가 호출한 터미널을 코디네이터로 묶는다. 띄운 뒤에는 터미널 프로세스 밖으로 분리하고(Windows WMI `Win32_Process.Create` 창 숨김 / macOS·Linux `setsid nohup`),
+자기 환경에서 `ORCA_*` 를 빼고 orca 호출에만 붙인다 — 터미널을 닫아도 루프가 돈다(4절 ②). 밖의 감시 `loop-watch.*` 도 같은 방식으로 띄운다. Run ID 는 임시 폴더의 `loop-run.txt` 에 두고 재시작 때 `run-use --id` 로 이어받는다.
+**codex 워커는 깨우지 않는다**(4절 [감시 3]은 Claude Code 워커 전제) — 턴이 끝난 채 조용하면 알림만 한다.
+워커는 출력 블록·판정 블록을 `done-<ID>.txt`·`verdict-<ID>.txt` 에 직접 쓰고 `worker_done --report-path` 로 끝낸다. `ask` 는 포그라운드로 돌리고 시간 초과·연결 끊김(오르카 재시작)이면 `ask --resume <같은 ID>` 로 잇는다(덧붙임에 있다). 명령 표면은 세팅 때 `orca skills get orchestration` 과 `--help` 로 확인하고,
 가벼운 모델의 시험 워커 하나로 ask→reply→결과 파일→`worker_done`→`worker-release` **스모크 테스트**를 돌린다.
 오르카 화면에서 카드가 `coordinator`·`worker-1`·`worker-2` 로 보이도록 `orca worktree set --worktree <id> --display-name worker-N` 을 세팅 때 한 번 한다.
 코덱스에는 서브에이전트가 없으므로 ③은 해당 없다.
 
-어느 모드든 **검증 세션은 `STATE.md`·`LOG.md` 를 쓰지 않는다.** 판정 블록을 출력하고, 옮기는 것은 구동기다.
+어느 모드든 **검증 세션은 `STATE.md`·`LOG.md` 를 쓰지 않는다.** 판정 블록을 출력하고, `STATE.md`·`LOG.md` 로 옮기는 것은 반영 토막(①-단일 반영 자식·병렬 코디네이터 자식·③ 상위 세션)이다. 구동기는 판정을 파일로 받아 넘길 뿐이다.
 
 ## 파일 작성
 
