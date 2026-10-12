@@ -2,7 +2,7 @@
 
 **An agent-skill plugin for Claude Code and Codex that takes a one-line idea through documents, a task plan, a verification harness, and an autonomous development loop.**
 
-[![version](https://img.shields.io/badge/version-1.11.1-blue)](CHANGELOG.md)
+[![version](https://img.shields.io/badge/version-1.12.0-blue)](CHANGELOG.md)
 [![license](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 [![Claude Code](https://img.shields.io/badge/Claude%20Code-plugin-8A2BE2)](#install)
 [![Codex](https://img.shields.io/badge/Codex-plugin-10A37F)](#install)
@@ -67,7 +67,7 @@ codex plugin marketplace add GangJaeYu/harness_loop_full_korean
 codex plugin add harness-loop-fullstack@harness-loop-fullstack
 ```
 
-Pin a version with `GangJaeYu/harness_loop_full_korean@v1.11.1` (both hosts). Plugin-free setup is in [Getting started](docs/getting-started.md) (Korean).
+Pin a version with `GangJaeYu/harness_loop_full_korean@v1.12.0` (both hosts). Plugin-free setup is in [Getting started](docs/getting-started.md) (Korean).
 
 **Requirements**: a git repository and the Claude Code (or Codex) CLI. For the loop stage, depending on your stack: **Docker** (DB and other services), **Node + Playwright** (e2e), and PowerShell 7 on Windows. [Orca](docs/loop.md) (an agent development environment) is optional for parallel runs.
 
@@ -78,7 +78,7 @@ Pin a version with `GangJaeYu/harness_loop_full_korean@v1.11.1` (both hosts). Pl
 | "I have a vague app idea" | `idea-brainstorm` | `docs/IDEA.md` |
 | "Write the PRD" | `prd-generator` | `docs/PRD.md` — requirement IDs with observable acceptance criteria |
 | "Pick the tech stack" | `trd-generator` | `docs/TRD.md` — technical decisions with rationale and rollback cost |
-| "Design the architecture" | `architecture-generator` | `docs/ARCHITECTURE/*.md` — conflicts with earlier docs are surfaced, not hidden |
+| "Design the architecture" | `architecture-generator` | `docs/ARCHITECTURE/*.md` — conflicts with earlier docs are surfaced, not hidden — once you choose, the earlier docs are updated too |
 | "Plan the development" | `plan-generator` | `plan_setup/` — phases, tasks (with frontmatter), STATE, LOG |
 | "Set up the harness" | `harness-setup` | `harness_setup/` — lint · unit · e2e · task_validation gate specs, `local-dev` script |
 | "Update the harness" | `harness-update` | Updates the harness (usually triggered by the loop) |

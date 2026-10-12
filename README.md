@@ -4,7 +4,7 @@
 
 *A Korean agent-skill plugin for Claude Code & Codex — idea → PRD → architecture → task plan → verification harness → autonomous development loop.* ([English](README.en.md))
 
-[![version](https://img.shields.io/badge/version-1.11.1-blue)](CHANGELOG.md)
+[![version](https://img.shields.io/badge/version-1.12.0-blue)](CHANGELOG.md)
 [![license](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 [![Claude Code](https://img.shields.io/badge/Claude%20Code-plugin-8A2BE2)](#설치)
 [![Codex](https://img.shields.io/badge/Codex-plugin-10A37F)](docs/getting-started.md#코덱스)
@@ -63,7 +63,7 @@ flowchart TD
 /plugin install harness-loop-fullstack@harness-loop-fullstack
 ```
 
-버전을 고정하려면 `GangJaeYu/harness_loop_full_korean@v1.11.1` 처럼 붙입니다.
+버전을 고정하려면 `GangJaeYu/harness_loop_full_korean@v1.12.0` 처럼 붙입니다.
 
 코덱스:
 
@@ -97,7 +97,7 @@ Windows 에서는 PowerShell 7(`pwsh`)을 권장합니다. 병렬 운용에 [Orc
 | "앱 하나 만들고 싶은데 막연해" | `idea-brainstorm` | `docs/IDEA.md` |
 | "PRD 써줘" | `prd-generator` | `docs/PRD.md` — 요구사항마다 ID 와 관찰 가능한 수용 기준 |
 | "기술 스택 정해줘" | `trd-generator` | `docs/TRD.md` — 결정 단위(TD)와 근거·되돌리기 비용 |
-| "아키텍처 설계해줘" | `architecture-generator` | `docs/ARCHITECTURE/*.md` — 앞 문서와 충돌하면 숨기지 않고 드러냄 |
+| "아키텍처 설계해줘" | `architecture-generator` | `docs/ARCHITECTURE/*.md` — 앞 문서와 충돌하면 숨기지 않고 드러내고, 고르시면 PRD·TRD 까지 고쳐 이어 감 |
 | "개발 계획 세워줘" | `plan-generator` | `plan_setup/` — phase·task(frontmatter)·STATE·LOG |
 | "하네스 세팅해줘" | `harness-setup` | `harness_setup/` — lint·unit·e2e·task_validation 정의서, `local-dev` |
 | "Redis 붙였으니 하네스 고쳐줘" | `harness-update` | 기존 하네스 갱신 (보통 루프가 스스로 부름) |
