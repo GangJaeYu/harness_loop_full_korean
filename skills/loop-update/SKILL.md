@@ -252,7 +252,7 @@ LOOP.md 에 적힌 규칙의 절반은 루프를 '멈추게 하는' 것이다
 
 - **사람이 대화형 세션에서 불렀다**(구동기가 멈춘 뒤, 또는 루프 시작 전) — 원인 쪽 스킬을 이어서 부른다(대화할 수 없는 세션이면 부르지 않고 "어느 스킬의 몫인가"만 보고한다):
   `files`·`depends_on`·수용 기준은 `plan-generator` 10단계, 게이트·흐름·local-dev 는 `harness-update`. 그것이 요구사항·기술·구조를 바꿔야 하면 사용자에게 묻고(답을 받기 전에는 고치지 않는다) **가장 앞 문서부터**
-  (`prd-generator` 8단계·`trd-generator` 9단계·`architecture-generator` 9단계 — 버전과 `변경 이력` 한 줄, 사이 문서의 바뀐 ID). 그다음 이 스킬로 돌아와 LOOP.md·DAG 를 맞춘다. 단 루프가 도는 중(`Phase Overview` 에 `in_progress`)이면 앞 문서는 고쳐도 `plan-generator` 10단계는 부르지 않고 무엇이 낡았는지 보고한다 — 규약 3.7·PRD 8단계와 같은 판정이다(플랜의 필자는 루프다). Layer 6(`feature-add`·`refactor-plan`)이 이 스킬을 부른 중이면 앞 문서는 본문이 아니라 **그 요청의 후미 절**(`## 추가 N`·`## 리팩토링 N`)에 적는다 — 원본 규칙이다. `refactor-plan` 이 부른 중에 PRD 를 바꿔야 하면 그것은 요구 변경이라 반영하지 않고 "`feature-add` 로 다룰 일"로 보고한다(리팩토링은 PRD 를 쓰지 않는다). 프로젝트가 완료됐으면(`Phase Overview` 전부 `completed`) 앞 문서는 고치지 않고 어긋난 곳을 보고만 한다 — 완료 뒤 문서 변경은 `feature-add`·`refactor-plan` 의 후미 절이다
+  (`prd-generator` 8단계·`trd-generator` 9단계·`architecture-generator` 9단계 — 버전과 `변경 이력` 한 줄, 사이 문서의 바뀐 ID). 그다음 이 스킬로 돌아와 LOOP.md·DAG 를 맞춘다. 단 루프가 도는 중(`Phase Overview` 에 `in_progress`)이면 앞 문서는 고쳐도 `plan-generator` 10단계는 부르지 않고 무엇이 낡았는지 보고한다 — PRD 8단계·TRD 9단계와 같은 판정이다(플랜의 필자는 루프다). Layer 6(`feature-add`·`refactor-plan`)이 이 스킬을 부른 중이면 앞 문서는 본문이 아니라 **그 요청의 후미 절**(`## 추가 N`·`## 리팩토링 N`)에 적는다 — 원본 규칙이다. `refactor-plan` 이 부른 중에 PRD 를 바꿔야 하면 그것은 요구 변경이라 반영하지 않고 "`feature-add` 로 다룰 일"로 보고한다(리팩토링은 PRD 를 쓰지 않는다). 프로젝트가 완료됐으면(`Phase Overview` 전부 `completed`) 앞 문서는 고치지 않고 어긋난 곳을 보고만 한다 — 완료 뒤 문서 변경은 `feature-add`·`refactor-plan` 의 후미 절이다
 - **루프 세션(코디네이터·무인 자식)이 불렀다** — 앞 문서를 고치지 않는다. `Next Action` 에 `질문: <원인> — <스킬> 로 반영한 뒤 "답: 반영함" 으로 알려 달라` 를 남긴다
 
 ## 6단계. 고친다
