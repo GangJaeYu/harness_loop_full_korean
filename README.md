@@ -4,7 +4,7 @@
 
 *A Korean agent-skill plugin for Claude Code & Codex — idea → PRD → architecture → task plan → verification harness → autonomous development loop.* ([English](README.en.md))
 
-[![version](https://img.shields.io/badge/version-1.14.0-blue)](CHANGELOG.md)
+[![version](https://img.shields.io/badge/version-1.15.0-blue)](CHANGELOG.md)
 [![license](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 [![Claude Code](https://img.shields.io/badge/Claude%20Code-plugin-8A2BE2)](#설치)
 [![Codex](https://img.shields.io/badge/Codex-plugin-10A37F)](docs/getting-started.md#코덱스)
@@ -63,7 +63,7 @@ flowchart TD
 /plugin install harness-loop-fullstack@harness-loop-fullstack
 ```
 
-버전을 고정하려면 `GangJaeYu/harness_loop_full_korean@v1.14.0` 처럼 붙입니다.
+버전을 고정하려면 `GangJaeYu/harness_loop_full_korean@v1.15.0` 처럼 붙입니다.
 
 코덱스:
 
@@ -113,7 +113,7 @@ Windows 에서는 PowerShell 7(`pwsh`)을 권장합니다. 병렬 운용에 [Orc
 ## 루프가 도는 동안
 
 - **시작**: 루프 세팅이 끝나면 `LOOP.md` 에 적힌 구동 명령으로 구동 스크립트를 띄웁니다. 스크립트가 태스크마다 새 세션을 열고, phase 가 바뀌어도 알아서 이어 갑니다.
-- **질문에 답하기**: 루프가 멈추면 `plan_setup/STATE.md` 의 `Next Action` 에 `질문:` 이 있습니다. 그 아래 `답:` 줄을 적고 구동 명령을 다시 실행합니다.
+- **질문에 답하기**: Orca 모드에서는 질문이 생기면 **답하기 탭**이 떠서 그 자리에서 답하고 멈춘 루프를 다시 띄웁니다. 그 밖에는 `plan_setup/STATE.md`(병렬이면 코디네이터 워크트리의 것)의 `Next Action` 에 있는 `질문:` 아래에 `답:` 줄을 적고 구동 명령을 다시 실행합니다.
 - **지켜보기**: Orca 모드에서는 **상태판**(`loop-status`)으로 봅니다 — 구동 스크립트가 살아 있는지, 지금 판단 중인지, 슬롯마다 어느 태스크가 어디까지 왔는지, 사람에게 걸린 질문이 한 화면에 10초마다 다시 그려집니다. 구동 명령을 친 터미널에 바로 뜨고, 읽기만 하므로 아무 터미널에서나 띄우고 닫아도 됩니다(Orca 사이드바에는 구동 스크립트와 판단 세션이 나오지 않습니다). 기록은 `STATE.md`·`LOG.md`, 검증까지 끝난 결과만 기본 브랜치(`main`)에 들어옵니다.
 - **알림**: Orca 모드에서는 루프가 진행할 수 있는데 멈추면(잠든 워커, 죽은 스크립트, 사람의 답을 기다리는 워커, 새 질문) OS 알림으로 알려 주고, 태스크·phase 가 완료될 때도 한 번씩 알려 줍니다. 완료 소식이 한동안 없으면 상태판을 보세요.
 

@@ -104,6 +104,7 @@ Windows 에서 세션의 셸 도구 이름이 `Bash` 가 아니라 `PowerShell` 
 자기 환경에 `ORCA_*` 를 가진 프로세스는 오르카가 정리하므로 환경은 파일(`loop-env.json`)로 넘겨 `ORCA_*` 를 orca 호출에만 붙인다(2026-10-01 탐침 — 닫힌 터미널의 바인딩으로 `check` 가 계속 된다).
 밖의 감시 `loop-watch.*` 도 같은 방식으로, `ORCA_*` 없이 띄운다(`worker-show`·`worker-list --run`·`inbox` 는 `ORCA_*` 없이 된다). 알림은 `loop-alerts.log` 한 줄과 Windows 토스트(모듈 없이 Windows PowerShell 5.1 — `pwsh` 7 에는 WinRT 투영이 없다)·`osascript`·`notify-send`.
 상태판 `loop-status.*` 은 읽기만 한다 — 임시 폴더 파일·`STATE.md` 와 `worker-list --run`(`ORCA_*` 없이)만 본다. 구동 스크립트·판단 자식(`claude -p`)은 오르카 사이드바에 나오지 않으므로 살아 있는지는 이것으로 본다.
+답하기 `loop-answer.*` 는 밖의 감시가 질문이 생기면 `orca terminal create … --command "<답하기 명령>" --focus` 로 오르카 탭에 띄운다(`ORCA_*` 없이 된다). 그 탭은 오르카 터미널이라 멈춘 구동 스크립트를 거기서 다시 띄울 수 있다.
 깨우기 판정(4절 [감시 3])의 전사는 `orca orchestration worker-read --dispatch <ID> --source transcript --json`(메시지 50개씩, `cursor` 로 이어 읽는다)이고, 백그라운드 완료 알림 판정(①)만 Claude Code 의 세션 파일
 `~/.claude/projects/<워커 트리 경로의 구분자·비ASCII 를 - 로>/<세션>.jsonl` 의 `queue-operation`(enqueue·dequeue·remove)을 본다 — 첫 사용자 메시지에 그 dispatch ID 가 정확히 든 파일만 고른다.
 Run ID 는 OS 임시 폴더의 `loop-run.txt` 에 두고 재시작 때 `orca orchestration run-use --id <Run>` 으로 이어받는다. 워커는 대화형 에이전트라 결과를 표준 출력으로 넘길 수 없으므로
