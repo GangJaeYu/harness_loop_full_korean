@@ -1181,6 +1181,8 @@ dispatch·결과 파일이 지워지지 않으면 끝난 워커를 도는 것으
   스모크가 끝난 뒤 다시 돌려 "○ 멈춤 — <종료 사유>" 가 나오면 통과다. 상태판이 돈 뒤 임시 폴더의 파일 목록·수정 시각이 그대로인지도 본다(읽기만 해야 한다)
   **답하기 탭도 스모크 안에서 띄워 본다** — 감시가 쓰는 것과 같은 `orca terminal create … --command "<답하기 명령> --once"` 를 `ORCA_*` 없이 불러 오르카에 탭이 뜨고 "답 없는 질문 없음" 이 나오면 통과(그 탭은 닫는다).
   `--once` 는 한 바퀴만 묻고 끝나는 옵션이다(질문이 없으면 그 한 줄을 내고 끝난다). 탭이 뜨지 않으면 8절 알림 수단에 "답하기 탭 없음 — 토스트·기록 줄만" 을 적는다
+  **시험 워커의 시작 화면도 본다** — `worker-start` 가 `outcome_unknown` 이면 `orca terminal read --terminal <핸들> --screen --limit 12` 로 입력창에 지시문이 초안으로 남았는지 보고,
+  그 모양(`draft: "…"`·`› [Pasted Content N chars]` 등)이 4절 [감시 5] 의 초안 인식에 걸리는지 확인한다. 다른 모양이면 그 모양을 더하고 8절 "스모크 테스트"에 적는다(에이전트 CLI 판마다 바뀐다)
   이것이 도는지 보지 않고 루프를 넘기면 첫 phase 에서 사람이 스크립트를 고치게 된다. 결과를 8절 "스모크 테스트"에 적는다
 
 그리고 `plan_setup/STATE.md` 에 **6단계에서 정한 두 절(`# Retry`, `# Standing Decisions`)을 더한다.** 병렬(①-병렬)이면 **`# Assignments`** 도 더하고
@@ -1302,7 +1304,7 @@ dispatch·결과 파일이 지워지지 않으면 끝난 워커를 도는 것으
 | ② 오르카 응답 | `loop-drive` 가 오르카 출력 전체(여러 줄 JSON)를 읽고 `payload` 문자열에서 `dispatchId` 를 꺼내며, reply 가 응답 JSON 없이 실패한 배달만 ack 하지 않고(`answer_conflict` 는 답함), 멈출 때 처리한 배달을 `check --ack <id> --peek` 로 ack 함. 구동 터미널은 구동 전용이고 자식의 표준 입력은 끊는다고 적혀 있음 | 고친다. 한 줄만 읽으면 첫 호출의 성공을 실패로 읽고, 호출 실패에도 ack 하면 질문이 답 없이 닫힌다 |
 | ② 워커의 ask | ② 워커 덧붙임에 `ask` 포그라운드(Bash timeout 600000, `--timeout-ms 540000`)와 "시간 초과는 실패가 아니다 — `ask --resume <같은 ID>`", "연결이 끊겨 끝나도 30초 뒤 `ask --resume`, 세 번 연속이면 `failed`" 가 있음 | 채운다. 백그라운드 ask 의 완료 알림을 놓친 워커는 잠들고, 시간 초과를 실패로 읽은 워커는 `failed` 로 끝내며, 오르카 재시작으로 끊긴 ask 뒤 턴을 끝낸 워커는 답이 와도 깨지 않는다 |
 | ② 슬롯·임시 폴더 | 슬롯 1 워커도 `--worktree path:<코디네이터 트리>` 로 띄우고(`current` 0건), 결과 파일을 다루는 자식(①-단일 반영·코디네이터·질문 답변)에 `--add-dir <임시>` 가 있음 | 고친다. `current` 는 구동 터미널의 워크트리(`main` 일 수 있다)로 풀리고, `--add-dir` 이 없으면 자식이 결과 파일을 못 지워 루프가 진전 없음으로 선다 |
-| ② 정지 감시 | 4절 ② 블록에 띄우기(터미널 프로세스 밖으로 분리, 자기 환경에 `ORCA_*` 없음)·시작 확인(PID 파일, `--force`)·단계·생존 파일·종료 사유(앞머리 순서 "질문 대기" → "배정 없음" → "전체 완료" → 원인)·쌓인 배달 처리와 `exited` 정리 필요·자식 실패(한도 쉼·1/5/15분 3회)·시작 실패·깨우기(`send` 1회, `agentWait` 값이면 깨우지 않음)·답 없는 질문 15분·이미 답한 질문 건너뛰기(`answered.txt`·`inbox` 의 `thread_id`)·완료 알림(코디네이터 자식 앞뒤 `Task Status`·`Phase Overview` 의 completed 비교)·[감시 11] 워커 생존(5분마다, `unverifiable`·`missing` + 전사·터미널 20분 정체면 `worker-stop` 뒤 END 없는 결과, 워커 상한 알림)이 있고, "밖의 감시" 블록(읽기 전용·알림만 — 죽음·정체·단계 상한·사람 프롬프트·질문:·종료 사유·답:, 답 없는 질문: 30분·2시간·8시간 재알림과 답하기 탭)과 8절 분리 실행 방식·알림 수단·감시 기준값이 있으며, `loop-watch.*` 를 썼음 | 채운다. 없으면 잠든 워커·사람 프롬프트·죽은 스크립트를 사람이 우연히 볼 때까지 루프가 서 있고(실측: 활동 시간의 22%), 재생된 이미 답한 질문이 `질문:` 을 남겨 루프가 선다 |
+| ② 정지 감시 | 4절 ② 블록에 띄우기(터미널 프로세스 밖으로 분리, 자기 환경에 `ORCA_*` 없음)·시작 확인(PID 파일, `--force`)·단계·생존 파일·종료 사유(앞머리 순서 "질문 대기" → "배정 없음" → "전체 완료" → 원인)·쌓인 배달 처리와 `exited` 정리 필요·자식 실패(한도 쉼·1/5/15분 3회)·시작 실패(시작 판정에 전사의 에이전트 메시지, 입력 초안이면 Enter 1회 — `draft:`·`[Pasted Content N chars]`, 그래도 안 뜨면 `worker-stop` → 멈춤 확인 → `--retry-of`, `nudged.txt` 터미널만 release 뒤 닫기)·깨우기(`send` 1회, `agentWait` 값이면 깨우지 않음)·답 없는 질문 15분·이미 답한 질문 건너뛰기(`answered.txt`·`inbox` 의 `thread_id`)·완료 알림(코디네이터 자식 앞뒤 `Task Status`·`Phase Overview` 의 completed 비교)·[감시 11] 워커 생존(5분마다, `unverifiable`·`missing` + 전사·터미널 20분 정체면 `worker-stop` 뒤 END 없는 결과, 워커 상한 알림)과 [감시 11-가] 모델 오류 화면(같은 5분마다 화면 끝에 8절 모델 오류 문구가 있고 `esc to interrupt` 가 없으면 계속 입력, 5분 뒤에도 그대로면 정리)이 있고, "밖의 감시" 블록(읽기 전용·알림만 — 죽음·정체·단계 상한·사람 프롬프트·질문:·종료 사유·답:, 답 없는 질문: 30분·2시간·8시간 재알림과 답하기 탭)과 8절 분리 실행 방식·알림 수단·감시 기준값이 있으며, `loop-watch.*` 를 썼음 | 채운다. 없으면 잠든 워커·사람 프롬프트·죽은 스크립트를 사람이 우연히 볼 때까지 루프가 서 있고(실측: 활동 시간의 22%), 재생된 이미 답한 질문이 `질문:` 을 남겨 루프가 선다 |
 | ② 상태판 | ②면 `loop-status.*` 가 있고 4절 "상태판" 과 같으며(구동기 생존·단계·판단 중 표시·멈춤 사유, 밖의 감시, 진행, 워커 행, 사람에게 걸린 것, 최근 기록), 파일 쓰기 0·오르카는 `worker-list --run` 만 `ORCA_*` 없이 부름. 구동 시작 명령이 분리한 뒤 그 터미널에 상태판을 그리고, 8절에 상태판 명령, `CLAUDE.md`·`AGENTS.md` 루프 절에 `--once` 줄이 있으며, 스모크 중·뒤에 `--once` 를 돌려 "돌고 있음"·"멈춤" 이 실제와 맞았음 | 쓰고 돌린다. 없으면 구동 스크립트와 판단 자식이 화면 어디에도 없어 사람이 "놀고 있나" 를 로그·프로세스를 뒤져 확인한다(실전 2026-10-12) |
 | 질문의 범위 | ①-병렬·② 반복의 첫 줄이 **전역 질문만** 새로 띄우기를 멈추고, 태스크 질문(`질문: <태스크 ID> — …`)은 그 행만 정지로 세우며, "태스크 질문만 남고 행이 전부 정지면 질문 대기" 멈춤이 있음. 코디네이터 지시문이 질문의 머리를 범위대로 쓰고(애매하면 전역) 태스크 질문이 있어도 반영·배정을 계속함 | 채운다. 없으면 질문 하나에 무관한 슬롯의 성공한 결과까지 반영·검증이 멈춰 사람을 기다린다(실전 2026-10-12) |
 | 끝난 행 재기동 | 행 띄우기(①-병렬·② 모두)가 dispatch 파일뿐 아니라 **결과 파일이 남은 행도 건너뜀** | 채운다. ②는 `worker_done` 때 dispatch 파일을 지우므로, 자식이 결과를 반영하기 전(미룸·반영 실패)에 끝난 워커가 다시 뜬다 |
@@ -1663,9 +1665,22 @@ dispatch·결과 파일이 지워지지 않으면 끝난 워커를 도는 것으
                                     그 오르카 터미널이 속한 워크트리로 풀려, 메인 트리 터미널에서 띄우면 워커가 main 에 뜬다. main 에서는 띄우지 않는다) → 받은 dispatchId 를 dispatch-<ID>.txt 에
         [감시 5] worker-start 가 dispatch 없이 거부되면(ok:false — selector_not_found·task_not_startable 등) → 멈춤 "시작 실패: <ID> — <코드>"
                  dispatch 는 생겼는데 state 가 ready 가 아니면: failed → 영수증의 recovery 대로 --retry-of <그 dispatch> 로 한 번 더(worktree·agent·model 을 다시 적는다)
-                   outcome_unknown → worker-show 의 worker.state 가 ready·active 이거나 projection.stage.detail 이 input_accepted 면 그대로 둔다. 아니면 1~2분 뒤 한 번 더 보고,
-                   그래도 같으면 recovery·nextSteps(없으면 worker-stop → 멈춤 확인)를 따라 --retry-of 한 번. 재시도도 실패하면 → 멈춤 "시작 실패: <ID>"
+                   outcome_unknown → 시작됐는지 본다: worker-show 의 worker.state 가 ready·active, projection.stage.detail 이 input_accepted, 또는 전사(worker-read --source transcript)에
+                     에이전트(assistant) 메시지가 있으면 시작된 것이다 — 그대로 둔다(codex 는 일하는 중에도 start_unknown·pending 이라 앞의 둘로는 못 잡는다)
+                   시작 안 됐으면 입력 초안을 본다 — worker-show 의 worker.agentTerminalHandle 로 orca terminal read --terminal <핸들> --screen --limit 12 를 읽어
+                     제출 안 된 지시문이 입력창에 남았으면(화면에 'draft: "' 로 시작하는 줄, 또는 '› [Pasted Content <수> chars]' 줄 — codex 0.162 는 긴 붙여넣기를 이렇게 접어 보인다)
+                     orca terminal send --terminal <핸들> --enter 를 한 번 보내고 그 핸들을 (임시)/nudged.txt 에 적는다. 30초 뒤 다시 시작을 본다 — 그래도 안 떴으면 아래 1~2분 갈래로
+                     (실측: codex 는 4번 중 3번 지시문이 초안으로 남았고 Enter 한 번으로 풀렸다. 접힌 모양을 못 알아봐 2026-10-13 시작 실패로 두 번 섰다 — 모양은 판마다 바뀌니 스모크에서 실제 화면을 보고 맞춘다)
+                   초안이 없으면 1~2분 뒤 한 번 더 본다. 그래도 시작 안 됐으면 worker-stop --dispatch <그 dispatch> → worker-show 로 멈춤 확인(dispatch.status stopped·failed·cancelled
+                     또는 worker.state stopped·failed, 10초 간격 몇 번) → --retry-of <그 dispatch> 한 번. --retry-of 는 멈춤이 확인된 시도에만 받아진다(그 밖은 task_not_startable).
+                     worker-stop 이 거부되거나 멈춤을 확인하지 못하면 → 멈춤 "시작 실패: <ID>". 멈춘 시도의 터미널이 남았고 그 핸들이 nudged.txt 에 있으면 닫는다(아래 끝 줄).
+                     영수증의 다음 명령 목록(오르카 1.4.222 는 nextCommands — worker-show·terminal read·worker-abandon)은 기록만 하고 따르지 않는다(필드 이름과 내용이 판마다 바뀐다).
+                     재시도가 준 새 dispatchId 에도 이 outcome_unknown 확인(초안 Enter 포함)을 그대로 한 번 한다 — 재시도는 더 하지 않는다. 그래도 안 뜨면 → 멈춤 "시작 실패: <ID>"
+                     (그 dispatch 는 두고 알린다 — 확인 뒤 worker-stop). dispatch-<ID>.txt 에는 시작이 확인된 마지막 dispatchId 를 적는다 — 첫 시도의 ID 를 적으면
+                     새 워커가 [감시 3]·[감시 11] 에서 빠지고 그 worker_done 이 재생으로 처리된다
                  (실패한 시작을 그냥 두면 그 행이 띄울 행으로 남거나 dispatch 파일만 남아 헛바퀴·영원한 대기가 된다)
+                 구동기가 워커 터미널에 직접 입력한(terminal send — 초안 Enter·아래 [감시 11] 모델 오류의 계속) 터미널은 오르카가 사람 개입으로 본다 — worker-release 가
+                 state retained·reason user_takeover 로 터미널을 남긴다. 그 핸들이 nudged.txt 에 있을 때만 orca terminal close --terminal <핸들> 로 닫는다(사람이 들어가 쓴 터미널은 둔다)
       토막 = e2e 대기 | 검증(격리 3) → 아래 차례 처리로 미룬다
     격리 3 이면 미룬 행을 슬롯 순서대로 하나씩:
       앱 전환 (local-dev -Down → 그 워커 트리에서 local-dev)
@@ -1694,7 +1709,7 @@ dispatch·결과 파일이 지워지지 않으면 끝난 워커를 도는 것으
                                그래도 실패하면 그 배달을 ack 하지 않은 채 멈춘다 "오르카 연결 없음: reply <메시지>"(다음 시작 때 [감시 9] 가 다시 처리한다)
                                (호출 실패에도 ack 하면 그 질문은 답 없이 닫히고 워커는 ask 에서 기다리다 끝난다. 간격 없이 다음 check 에 맡기면 재생된 배달이 곧바로 다시 와 답변 자식을 쉬지 않고 거듭 부른다)
       worker_done           → 결과 파일(done-<ID>.txt / verdict-<ID>.txt)이 없으면 메시지 본문을 그 파일에 적는다(END 가 없으니 코디네이터가 중단으로 처리)
-                               → worker-release --dispatch <ID> → dispatch-<ID>.txt 삭제 → 다음 라운드로 (나머지 워커는 계속 돈다)
+                               → worker-release --dispatch <ID>(retained·user_takeover 면 위 [감시 5] 끝 줄대로 nudged.txt 의 터미널만 닫는다) → dispatch-<ID>.txt 삭제 → 다음 라운드로 (나머지 워커는 계속 돈다)
                                (dispatch 는 메시지 payload — JSON 문자열 — 의 dispatchId 로 찾는다. 오르카 응답은 들여쓴 여러 줄 JSON 이다 — 한 줄만 읽으면 성공을 실패로 읽는다)
                                그 dispatchId 를 담은 dispatch 파일이 없으면 이미 처리한 배달의 재생이다 → worker-release 만(결과 파일을 만들지 않는다 — 반영된 결과의 END 없는 사본이 된다)
                                (코디네이터는 dispatch 파일이 남은 행의 결과 파일을 반영하지 않는다 — 결과 파일을 쓴 워커의 worker_done 이 아직 처리되지 않았다. 코디네이터 지시문 1)·2))
@@ -1702,6 +1717,17 @@ dispatch·결과 파일이 지워지지 않으면 끝난 워커를 도는 것으
                                [감시 5] 띄운 지 5분 안에 전사(worker-read --source transcript)에 첫 메시지가 없는 워커 → 알림. 감시의 생존 파일이 없거나 3분 넘게 정체면 감시를 다시 띄운다
       도는 dispatch 가 있으면 5분마다 [감시 11] → orca orchestration worker-list --json 의 생존 판정을 dispatch 마다 본다
                                (빈 대기를 기다리지 않는다 — 다른 워커의 worker_done 이 잦아도 센다. 5분은 라운드를 넘어 이어 센다. 대기 안에서만 세면 동시 3 에서 거의 돌지 않는다):
+         먼저 모델 오류 화면 [감시 11-가] (exited 가 아니면 생존 판정과 무관하게 — 살아 있어 아래 정체 규칙에 걸리지 않는 정지다) →
+                               worker.agentTerminalHandle 로 orca terminal read --terminal <핸들> --screen --limit 12 를 읽어, 모델 오류 문구(8절 "모델 오류 문구" — 실측 codex
+                               "Selected model is at capacity. Please try a different model.")가 있고 일하는 중 표시("esc to interrupt" — 대소문자 무시)가 없으면 입력창에 선 것이다
+                               (실측 2026-10-13: codex 검증 워커가 시작 직후 이 오류로 입력창에 서서 30분 넘게 슬롯을 쥐었다 — 프로세스는 살아 있고 판정은 working 뒤 unverifiable).
+                               사람 프롬프트(agentWait)·한도 화면 가드는 아래와 같다 — 그 화면이면 이것을 하지 않는다.
+                               처음 보면 같은 터미널에 orca terminal send --terminal <핸들> --text "모델 오류로 멈췄다. 받은 TASK 를 이어서 끝까지 하라(결과 파일 END 와 worker_done 까지)." --enter
+                               (핸들을 nudged.txt 에, 보낸 시각은 스크립트 메모리의 그 dispatch 상태에 — 재시작하면 사라져 처음 본 것으로 다시 보낸다. 계속 한 번 더는 해가 없다) → 알림 워커모델오류.
+                               용량 오류는 대개 일시적이다. 보낸 회차와 그다음 확인까지는 그 dispatch 의 아래 정체 판정을 하지 않는다(오래 멈춘 뒤 재시작했으면 계속을 보내자마자 20분 정체로 끈다).
+                               조건이 거짓인 확인에서는 보낸 시각을 지운다(회복한 워커가 나중에 다시 오류를 내면 또 계속부터).
+                               보낸 뒤의 다음 [감시 11] 확인(5분 뒤)에서 이 조건이 다시 참이면 — 화면 글자를 비교하지 않는다(보낸 문구가 화면에 남는다) → 아래 정체 정리와 같이 worker-stop → 멈춤 확인 → 결과 파일이 없을 때만 END 없는 "모델 오류 화면 — 계속 입력 뒤에도 멈춤"
+                               → dispatch 파일 삭제 → 다음 라운드, 알림 워커정리(멈춤을 확인하지 못하면 워커정리실패). 정리했으면 그 dispatch 의 아래 판정은 건너뛴다
          exited 인데 worker_done 이 없으면 → 그 행의 결과 파일이 없을 때만 "exited, worker_done 없음" 을 END 없이 결과 파일에 적고(코디네이터가 중단으로 센다 — 두 번째면 질문:.
                                워커가 END 까지 쓰고 죽었으면 그 결과를 덮어쓰지 않는다) → dispatch 파일을 지우고 다음 라운드로.
                                결과 파일 없이 지우기만 하면 매번 같은 자리에서 죽는 워커가 새 Task 로 끝없이 다시 뜬다
@@ -1740,7 +1766,7 @@ dispatch·결과 파일이 지워지지 않으면 끝난 워커를 도는 것으
   }
   알림 (구동 스크립트·밖의 감시 공통) → (임시)/loop-alerts.log 에 "<시각> <종류> <대상> <요약>" 한 줄을 남기고 OS 알림을 띄운다(8절 "알림 수단").
     종류는 이 이름만 쓴다(공백 없는 한 낱말 — 사람이 기록을 찾아 읽는다): 스크립트죽음 · 스크립트정체 · 단계상한 · 사람프롬프트 · 새질문 · 정지 · 재시작 · 한도 · 전사없음 · 깨워도조용 · 다시잠듦 ·
-    워커한도화면 · 출력정체 · 배정확인 · 생존확인불가 · 워커정리 · 워커정리실패 · 워커상한 · 답할수없음 · 답없는질문 · 질문재알림 · 완료(이것만 좋은 소식). 대상은 태스크 ID·단계 이름·"-" 중 하나(공백은 _ 로)
+    워커한도화면 · 출력정체 · 배정확인 · 생존확인불가 · 워커모델오류 · 워커정리 · 워커정리실패 · 워커상한 · 답할수없음 · 답없는질문 · 질문재알림 · 완료(이것만 좋은 소식). 대상은 태스크 ID·단계 이름·"-" 중 하나(공백은 _ 로)
     같은 (종류, 대상, 요약) 은 실행 ID 마다 한 번만 알린다(래치 — (임시)/loop-latch-<실행 ID>.txt). OS 알림이 실패해도 기록 줄은 남는다.
     요약에는 경과 분·현재 시각처럼 매번 바뀌는 값을 넣지 않는다 — 넣으면 래치가 깨져 1분마다 같은 알림이 나간다(상태가 시작된 시각처럼 그 상태에 고정된 값은 된다)
   멈출 때(어느 정지든) → 처리하고 아직 ack 하지 않은 배달이 있으면 orca orchestration check --ack <그 배달 ID> --peek --json 으로 ack 만 하고(답 못 한 질문이 든 배달은 ack 하지 않는다),
@@ -2037,7 +2063,9 @@ Acceptance Criteria 충족 **그리고** 'phase 완료 묶음'이 통과.
 **감시 기준값**(②, 잠정 — 실측으로 조정): 단계 상한 — 앱 전환 5분 · 태스크 e2e 15분 · 오르카 명령 5분 · 코디네이터 자식 60분(phase 완료 묶음 포함) · 답변 자식 10분 · 재시도 대기 그 회차 간격+2분 · 한도 대기 재설정 시각+15분(모르면 17분).
 생존 파일 정체 3분 · 시작 뒤 첫 전사 5분 · 깨우기 ①② 3분·③′ 5분·③ 20분, 깨운 뒤 확인 5분 · 답 없는 질문 15분 · 자식 재시도 1·5·15분(3회) · 한도 재설정을 모르면 15분.
 워커 생존 확인 5분마다(도는 워커가 있는 동안 — 빈 대기에 묶지 않는다) · 생존 확인 불가 + 전사·터미널 정체 20분이면 정리 · 워커 상한 구현·수정 90분·검증 45분(알림만) · `질문:` 재알림 30분·2시간·8시간.
-**임시 폴더의 구동 파일**(②): `loop-run.txt`(Run) · `loop-drive.pid`·`loop-env.json`·`loop-stage.txt`·`loop-alive.txt`·`loop-exit.txt`(종료 사유) · `loop-watch.pid`·`loop-watch.alive` · `loop-alerts.log`·`loop-latch-<실행 ID>.txt` · `answered.txt` · `dispatch-<ID>.txt`·`done-`·`verdict-`·`e2e-<ID>.txt` · `loop-drive.log` · `loop-watch-questions.json`(질문을 처음 본 시각)·`loop-answer-tab.txt`(답하기 탭 핸들)·`loop-answer.pid`(답하기가 떠 있는 동안).
+모델 오류 화면 — 같은 5분마다 화면 12줄을 보고, 계속을 입력한 뒤 5분에도 그대로면 정리 · 시작 때 입력 초안이면 Enter 1회 뒤 30초.
+**모델 오류 문구**(②, [감시 11-가] — 아는 것만 막는다): `at capacity` · `try a different model`(codex, 실측 2026-10-13). 일하는 중 표시 `esc to interrupt`. 새로 본 문구는 여기에 더한다 — 사용량 한도 문구(`usage limit`·`continuing automatically at`)는 넣지 않는다(한도는 기다리는 것이라 워커한도화면 알림만).
+**임시 폴더의 구동 파일**(②): `loop-run.txt`(Run) · `loop-drive.pid`·`loop-env.json`·`loop-stage.txt`·`loop-alive.txt`·`loop-exit.txt`(종료 사유) · `loop-watch.pid`·`loop-watch.alive` · `loop-alerts.log`·`loop-latch-<실행 ID>.txt` · `answered.txt` · `dispatch-<ID>.txt`·`done-`·`verdict-`·`e2e-<ID>.txt` · `nudged.txt`(구동기가 직접 입력한 워커 터미널 핸들 — release 뒤 이것만 닫는다) · `loop-drive.log` · `loop-watch-questions.json`(질문을 처음 본 시각)·`loop-answer-tab.txt`(답하기 탭 핸들)·`loop-answer.pid`(답하기가 떠 있는 동안).
 이것은 기록이 아니라 구동 상태다(기록처는 `STATE.md`·`LOG.md` 둘뿐) — 커밋하지 않고, 지울 때는 스크립트가 멈춘 뒤에 지운다.
 구동 스크립트와 밖의 감시가 서로 읽는 파일의 모양은 고정이다 — `loop-drive.pid`·`loop-watch.pid` = JSON `{"pid": <숫자>, "start": "<시작 시각 읽기 명령의 출력>", "run": "<실행 ID>"}` · `loop-stage.txt` = JSON `{"stage": "<단계>", "at": "<ISO 시각>", "until": "<ISO — 쉬는 단계에서 끝날 시각을 알 때만. 한도 재설정 시각을 모르면 쓰지 않는다 — 감시는 17분으로 잰다>", "run": "<실행 ID>"}`
 (단계 이름: 시작 · 대기 · 코디네이터 자식 · 답변 자식 · 오르카 명령 · 앱 전환 · 태스크 e2e · 재시도 대기 · 한도 대기) · `loop-alive.txt` = ISO 시각 한 줄 · `loop-exit.txt` = 종료 사유 한 줄 · `loop-latch-<실행 ID>.txt` = 줄마다 `<종류>|<대상>|<요약>`.
