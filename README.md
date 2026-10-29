@@ -4,7 +4,7 @@
 
 *Korean agent skills for Claude Code & Codex — idea → PRD → architecture → plan → verification harness → autonomous loop.* ([English](README.en.md))
 
-[![version](https://img.shields.io/badge/version-2.1.1-blue)](CHANGELOG.md)
+[![version](https://img.shields.io/badge/version-2.2.0-blue)](CHANGELOG.md)
 [![license](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 [![Claude Code](https://img.shields.io/badge/Claude%20Code-plugin-8A2BE2)](#설치)
 [![Codex](https://img.shields.io/badge/Codex-plugin-10A37F)](docs/getting-started.md#codex)
@@ -62,7 +62,7 @@ flowchart TB
 | | 1.x (1.15.5) | 2.0 |
 |---|---|---|
 | 스킬 지시문 분량 | 9,699줄 | 1,603줄 (약 83% 감소) |
-| 진행 방식 | 단계마다 검토, 루프 중 질문은 답할 때까지 대기 | 미리 승인한 범위는 연속 진행, Loop 후 질문 없음 |
+| 진행 방식 | 단계마다 검토, 루프 중 질문은 답할 때까지 대기 | Loop 실행 전까지 단계마다 결과 보고·진행 확인, Loop 후 질문 없음 |
 | 실패 처리 | 3회 실패하면 멈추고 사람에게 질문 | 3회 안에 원인 분석·새 전략, 끝내 막히면 정직한 미완료 |
 | 실행 구조 | 프로젝트마다 구동·감시 스크립트 생성 | Claude Code·Codex·Orca 기능을 그대로 사용 |
 | 화면 디자인 | 정해진 자리 없음 | 구현 전에 실제 미리보기를 보고 사용자가 선택 |
@@ -85,7 +85,7 @@ codex plugin marketplace add GangJaeYu/harness_loop_full_korean
 codex plugin add harness-loop-fullstack-kor@harness-loop-fullstack-kor
 ```
 
-버전을 고정하려면 `GangJaeYu/harness_loop_full_korean@v2.1.1`처럼 붙입니다.
+버전을 고정하려면 `GangJaeYu/harness_loop_full_korean@v2.2.0`처럼 붙입니다.
 **1.x(`harness-loop-fullstack`)를 쓰고 있었다면** 2.0에서 플러그인 이름이 바뀌었으니 [시작하기](docs/getting-started.md#1x에서-옮기기)를 따라 바꿔 설치하세요.
 
 **필요한 것:** git, Claude Code 또는 Codex CLI. 나머지 도구(Docker, 브라우저 테스트, WSL, Orca 등)는 프로젝트에 필요할 때 에이전트가 확인하고, 없으면 Loop 전에 알려 줍니다.
@@ -96,8 +96,8 @@ codex plugin add harness-loop-fullstack-kor@harness-loop-fullstack-kor
 이런 앱을 만들고 싶어: (설명). 환경을 확인하고 필요한 것을 먼저 물은 뒤 구현과 검증까지 진행해줘.
 ```
 
-- 기본은 단계마다 결과와 다음 스킬을 **제안받고 승인**하는 방식입니다.
-- "루프까지 묻지 말고 진행해"처럼 이후 단계를 권한·예산과 함께 미리 승인하면, 그 범위는 연속으로 진행합니다.
+- Loop 실행 전까지 단계마다 **결과를 보고받고 이어 진행할지 답하는** 방식입니다.
+- 확인을 건너뛰려면 "단계별 확인 없이 루프까지 진행해"처럼 직접 말해야 합니다. "끝까지 만들어줘"나 권한·예산 합의만으로는 건너뛰지 않습니다.
 - 원하는 단계가 분명하면 **스킬 이름을 직접 부르는 것이 가장 확실합니다.**
 
 ```text
@@ -134,7 +134,7 @@ $bug-fix 검색에서 소문자로 찾으면 결과가 빠져                   
 |---|---|
 | [시작하기](docs/getting-started.md) | 설치, 1.x에서 옮기기, 플러그인 없이 쓰기, 첫 프로젝트 |
 | [스킬 안내](docs/skills.md) | 스킬 13개의 용도·산출물·다음 단계 |
-| [진행 방식](docs/workflow.md) | 합의, 단계 승인, 디자인 선택, 문서가 바뀔 때 |
+| [진행 방식](docs/workflow.md) | 합의, 단계 확인, 디자인 선택, 문서가 바뀔 때 |
 | [검증 하네스](docs/harness.md) | 네 게이트, 독립 검증, 다른 OS 검증 |
 | [개발 루프](docs/loop.md) | 병렬과 Orca, 실패와 전략 전환, 중단과 재개, 모델과 한도 |
 | [변경 기록](CHANGELOG.md) | 버전별 변경 |

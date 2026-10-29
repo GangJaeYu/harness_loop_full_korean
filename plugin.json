@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "harness-loop-fullstack-kor",
-  "version": "2.1.1",
+  "version": "2.2.0",
   "description": "요구 구체화부터 구현·검증·복구까지, 사전 합의 안에서 자율 진행하는 한국어 Claude Code·Codex 스킬 13개. 큰 흐름과 반드시 지킬 검증만 정하고 방법은 에이전트에게 맡긴다. / Korean agent skills for Claude Code & Codex: idea → PRD/TRD → architecture → plan → verification harness → autonomous loop, with up-front agreement, ordered quality gates and independent validation.",
   "author": {
     "name": "FlyingTajo"

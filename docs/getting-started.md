@@ -28,7 +28,7 @@ codex plugin add harness-loop-fullstack-kor@harness-loop-fullstack-kor
 
 ### 버전 고정
 
-저장소 뒤에 `@태그`를 붙입니다. 예: `GangJaeYu/harness_loop_full_korean@v2.1.1`. 두 호스트 모두 같습니다.
+저장소 뒤에 `@태그`를 붙입니다. 예: `GangJaeYu/harness_loop_full_korean@v2.2.0`. 두 호스트 모두 같습니다.
 
 ### 1.x에서 옮기기
 
@@ -74,11 +74,11 @@ git submodule add https://github.com/GangJaeYu/harness_loop_full_korean .agent-s
 ```
 
 1. 에이전트가 환경(OS, 런타임, 도구, 권한)을 조사하고, 사용자만 정할 수 있는 것을 묻습니다. 목적과 범위, 허용·금지, 시간·사용량 예산, 쓸 모델, 한도에 걸렸을 때의 처리입니다.
-2. IDEA → PRD → TRD → Architecture → Plan → Harness 순으로 문서를 만들고, 단계마다 결과와 다음 스킬을 제안합니다. IDEA·PRD·TRD에서는 선택지와 추천안을 붙여 필요한 만큼 묻고, 문서마다 검토를 받은 뒤 넘어갑니다.
+2. IDEA → PRD → TRD → Architecture → Plan → Harness 순으로 문서를 만들고, 단계마다 결과를 보고하고 이어 진행할지 확인합니다. IDEA·PRD·TRD에서는 선택지와 추천안을 붙여 필요한 만큼 묻고, 문서마다 검토를 받은 뒤 넘어갑니다.
 3. 화면 제품이면 PRD 다음에 **실제 디자인 미리보기**를 보여 주고 고르게 합니다.
 4. Loop가 시작되면 질문 없이 구현·검증·복구를 진행하고, 마지막에 완료 범위·증거·남은 미검증을 보고합니다.
 
-단계마다 승인하기 번거로우면 처음에 "루프까지 묻지 말고 진행해, 예산은 1시간"처럼 범위와 예산을 함께 말하면 됩니다.
+단계별 확인을 건너뛰려면 "단계별 확인 없이 루프까지 진행해, 예산은 1시간"처럼 직접 말하면 됩니다. "끝까지 만들어줘"만으로는 건너뛰지 않습니다.
 
 ### 스킬을 직접 부르기
 
