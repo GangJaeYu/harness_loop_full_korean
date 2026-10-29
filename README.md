@@ -4,7 +4,7 @@
 
 *Korean agent skills for Claude Code & Codex — idea → PRD → architecture → plan → verification harness → autonomous loop.* ([English](README.en.md))
 
-[![version](https://img.shields.io/badge/version-2.2.0-blue)](CHANGELOG.md)
+[![version](https://img.shields.io/badge/version-2.2.1-blue)](CHANGELOG.md)
 [![license](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 [![Claude Code](https://img.shields.io/badge/Claude%20Code-plugin-8A2BE2)](#설치)
 [![Codex](https://img.shields.io/badge/Codex-plugin-10A37F)](docs/getting-started.md#codex)
@@ -85,7 +85,7 @@ codex plugin marketplace add GangJaeYu/harness_loop_full_korean
 codex plugin add harness-loop-fullstack-kor@harness-loop-fullstack-kor
 ```
 
-버전을 고정하려면 `GangJaeYu/harness_loop_full_korean@v2.2.0`처럼 붙입니다.
+버전을 고정하려면 `GangJaeYu/harness_loop_full_korean@v2.2.1`처럼 붙입니다.
 **1.x(`harness-loop-fullstack`)를 쓰고 있었다면** 2.0에서 플러그인 이름이 바뀌었으니 [시작하기](docs/getting-started.md#1x에서-옮기기)를 따라 바꿔 설치하세요.
 
 **필요한 것:** git, Claude Code 또는 Codex CLI. 나머지 도구(Docker, 브라우저 테스트, WSL, Orca 등)는 프로젝트에 필요할 때 에이전트가 확인하고, 없으면 Loop 전에 알려 줍니다.

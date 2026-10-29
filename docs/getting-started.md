@@ -28,7 +28,7 @@ codex plugin add harness-loop-fullstack-kor@harness-loop-fullstack-kor
 
 ### 버전 고정
 
-저장소 뒤에 `@태그`를 붙입니다. 예: `GangJaeYu/harness_loop_full_korean@v2.2.0`. 두 호스트 모두 같습니다.
+저장소 뒤에 `@태그`를 붙입니다. 예: `GangJaeYu/harness_loop_full_korean@v2.2.1`. 두 호스트 모두 같습니다.
 
 ### 1.x에서 옮기기
 
