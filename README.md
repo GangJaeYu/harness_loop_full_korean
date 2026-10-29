@@ -4,7 +4,7 @@
 
 *Korean agent skills for Claude Code & Codex — idea → PRD → architecture → plan → verification harness → autonomous loop.* ([English](README.en.md))
 
-[![version](https://img.shields.io/badge/version-2.1.0-blue)](CHANGELOG.md)
+[![version](https://img.shields.io/badge/version-2.1.1-blue)](CHANGELOG.md)
 [![license](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 [![Claude Code](https://img.shields.io/badge/Claude%20Code-plugin-8A2BE2)](#설치)
 [![Codex](https://img.shields.io/badge/Codex-plugin-10A37F)](docs/getting-started.md#codex)
@@ -48,7 +48,7 @@ flowchart TB
 ```
 
 - **완료는 증거로 판정합니다.** `lint → unit → e2e → task_validation` 순서로 판정하고, 마지막 판정은 그 코드를 만들지 않은 별도 세션이 실제로 실행해 내립니다.
-- **질문은 Loop 전에 합니다.** IDEA·PRD·TRD는 대화로 정합니다. 내용을 구체적이고 사용자에게 맞게 만들도록 선택지·이유·추천안을 붙여 필요한 만큼 묻습니다. 목적·권한·예산·금지 사항, 쓸 모델과 사용량 한도에 걸렸을 때의 처리도 Loop 전에 정합니다.
+- **질문은 Loop 전에 합니다.** IDEA·PRD·TRD는 대화로 정합니다. 내용을 구체적이고 사용자에게 맞게 만들도록 선택지·이유·추천안을 붙여 필요한 만큼 묻고, 문서마다 요약과 가정을 보여 드리고 검토를 받습니다. 목적·권한·예산·금지 사항, 쓸 모델과 사용량 한도에 걸렸을 때의 처리도 Loop 전에 정합니다.
 - **막히면 사람을 기다리지 않고 전략을 바꿉니다.** 같은 방식의 수정이 3번 안에 풀리지 않으면 원인을 다시 분석해 다른 방법을 씁니다. 끝내 안 되면 변경과 증거를 남기고 미완료로 정직하게 보고합니다.
 - **독립 작업은 병렬로 합니다.** 워커 수는 작업의 독립성과 자원을 보고 에이전트가 정합니다. [Orca](docs/loop.md#orca에서-병렬로-돌리기)가 있으면 워크트리 워커로 나눠 돌립니다.
 - **완료 뒤에도 이어집니다.** 기능 추가·버그 수정·리팩토링, 문서 없는 기존 코드를 이 흐름에 올리는 스킬이 있습니다.
@@ -85,7 +85,7 @@ codex plugin marketplace add GangJaeYu/harness_loop_full_korean
 codex plugin add harness-loop-fullstack-kor@harness-loop-fullstack-kor
 ```
 
-버전을 고정하려면 `GangJaeYu/harness_loop_full_korean@v2.1.0`처럼 붙입니다.
+버전을 고정하려면 `GangJaeYu/harness_loop_full_korean@v2.1.1`처럼 붙입니다.
 **1.x(`harness-loop-fullstack`)를 쓰고 있었다면** 2.0에서 플러그인 이름이 바뀌었으니 [시작하기](docs/getting-started.md#1x에서-옮기기)를 따라 바꿔 설치하세요.
 
 **필요한 것:** git, Claude Code 또는 Codex CLI. 나머지 도구(Docker, 브라우저 테스트, WSL, Orca 등)는 프로젝트에 필요할 때 에이전트가 확인하고, 없으면 Loop 전에 알려 줍니다.
