@@ -4,13 +4,13 @@
 
 ([한국어](README.md)) — The skills and generated documents are written in Korean.
 
-[![version](https://img.shields.io/badge/version-2.0.0-blue)](CHANGELOG.md)
+[![version](https://img.shields.io/badge/version-2.1.0-blue)](CHANGELOG.md)
 [![license](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
 ## What it does
 
 Starting from "I want to build this app", the agent writes requirement, technology and design documents, splits the work, sets up verification, and then **keeps implementing, verifying and recovering until the acceptance criteria actually pass.**
-You decide the goal, permissions and budget before it starts (and pick the visual design for UI products). Once the loop starts, it runs to the end without asking questions.
+You shape the idea, requirements and tech choices with the agent through questions and options, decide the goal, permissions and budget before it starts (and pick the visual design for UI products). Once the loop starts, it runs to the end without asking questions.
 
 - **Completion is proven, not claimed.** Ordered gates `lint → unit → e2e → task_validation`; the last one is run by a separate session that did not write the code.
 - **Questions come first, once.** Goal, permissions, budget, prohibitions, default models and what to do on usage limits are agreed before the loop.
@@ -41,7 +41,7 @@ codex plugin marketplace add GangJaeYu/harness_loop_full_korean
 codex plugin add harness-loop-fullstack-kor@harness-loop-fullstack-kor
 ```
 
-Pin a version with `GangJaeYu/harness_loop_full_korean@v2.0.0`. Upgrading from 1.x: see [Getting started](docs/getting-started.md#1x에서-옮기기) (Korean).
+Pin a version with `GangJaeYu/harness_loop_full_korean@v2.1.0`. Upgrading from 1.x: see [Getting started](docs/getting-started.md#1x에서-옮기기) (Korean).
 
 To call a skill explicitly: `/harness-loop-fullstack-kor:prd-generator ...` (Claude Code) or `$prd-generator ...` (Codex).
 
