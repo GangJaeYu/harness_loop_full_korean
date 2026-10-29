@@ -18,15 +18,33 @@
 사람은 시작 전에 목적·권한·예산을 정하고, 화면 제품이면 디자인을 고릅니다. Loop가 시작되면 질문 없이 끝까지 갑니다.
 
 ```mermaid
-flowchart LR
-    A["합의<br/>목적·권한·예산·모델"] --> B["문서<br/>IDEA → PRD → TRD → Architecture"]
-    B --> C["계획·하네스<br/>Plan → Harness"]
-    C --> D["Loop<br/>구현(병렬)"]
-    D --> E{"lint → unit → e2e"}
-    E -->|FAIL| D
-    E -->|PASS| F{"독립 검증<br/>다른 세션"}
-    F -->|FAIL| D
-    F -->|PASS| G["완료 보고"]
+%%{init: {"theme": "base", "themeVariables": {"fontSize": "16px", "fontFamily": "Pretendard, 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif", "lineColor": "#94A3B8", "edgeLabelBackground": "#FFFFFF", "clusterBkg": "transparent", "clusterBorder": "#CBD5E1"}, "flowchart": {"curve": "basis", "nodeSpacing": 28, "rankSpacing": 36, "padding": 14}}}%%
+flowchart TB
+    subgraph PREP["준비 · 사람과 합의"]
+        direction LR
+        A["<b>합의</b><br/>목적 · 권한 · 예산 · 모델"] --> B["<b>문서</b><br/>IDEA · PRD · TRD · 설계"] --> C["<b>계획 · 하네스</b><br/>작업 분할 · 검증 수단"]
+    end
+    subgraph LOOP["Loop · 질문 없이 자율 진행"]
+        direction LR
+        D["<b>구현</b><br/>독립 작업은 병렬"] --> E(["<b>게이트</b><br/>lint → unit → e2e"]) -->|PASS| F(["<b>독립 검증</b><br/>구현하지 않은 세션"])
+        E -.->|FAIL| D
+        F -.->|FAIL| D
+    end
+    G["<b>완료 보고</b><br/>증거 · 남은 미검증"]
+    PREP --> LOOP
+    LOOP -->|모두 PASS| G
+
+    classDef prep fill:#EEF2FF,stroke:#6366F1,stroke-width:1.5px,color:#1E1B4B
+    classDef work fill:#ECFEFF,stroke:#0891B2,stroke-width:1.5px,color:#083344
+    classDef gate fill:#FFF7ED,stroke:#EA580C,stroke-width:1.5px,color:#431407
+    classDef done fill:#10B981,stroke:#047857,stroke-width:1.5px,color:#FFFFFF
+    linkStyle default stroke:#94A3B8,stroke-width:1.6px
+    class A,B,C prep
+    class D work
+    class E,F gate
+    class G done
+    style PREP fill:transparent,stroke:#818CF8,stroke-dasharray:4 4,color:#6366F1
+    style LOOP fill:transparent,stroke:#22D3EE,stroke-dasharray:4 4,color:#0891B2
 ```
 
 - **완료는 증거로 판정합니다.** `lint → unit → e2e → task_validation` 순서로 판정하고, 마지막 판정은 그 코드를 만들지 않은 별도 세션이 실제로 실행해 내립니다.
