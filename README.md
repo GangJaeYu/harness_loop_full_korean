@@ -1,145 +1,124 @@
-# harness-loop-fullstack
+# harness-loop-fullstack-kor
 
-**아이디어 한 줄에서 시작해 문서 → 태스크 → 검증 하네스 → 자율 개발 루프까지 잇는 한글 에이전트 스킬 플러그인**
+**요구 구체화부터 구현·검증·복구까지, 처음에 합의한 범위 안에서 에이전트가 끝까지 진행하는 한국어 스킬 플러그인**
 
-*A Korean agent-skill plugin for Claude Code & Codex — idea → PRD → architecture → task plan → verification harness → autonomous development loop.* ([English](README.en.md))
+*Korean agent skills for Claude Code & Codex — idea → PRD → architecture → plan → verification harness → autonomous loop.* ([English](README.en.md))
 
-[![version](https://img.shields.io/badge/version-1.15.5-blue)](CHANGELOG.md)
+[![version](https://img.shields.io/badge/version-2.0.0-blue)](CHANGELOG.md)
 [![license](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 [![Claude Code](https://img.shields.io/badge/Claude%20Code-plugin-8A2BE2)](#설치)
-[![Codex](https://img.shields.io/badge/Codex-plugin-10A37F)](docs/getting-started.md#코덱스)
+[![Codex](https://img.shields.io/badge/Codex-plugin-10A37F)](docs/getting-started.md#codex)
 
 ---
 
 ## 무엇을 해 주나
 
-"이런 앱 만들고 싶어"라고 말하면, 에이전트가 **요구사항·기술·설계 문서를 쓰고, 검증 가능한 태스크로 쪼개고,
-태스크마다 통과 기준(게이트)을 세운 뒤, 그 기준을 통과할 때까지 스스로 구현·검증·수정을 반복**합니다.
-사람은 단계마다 결과를 검토하고, 루프가 돌기 시작하면 **루프가 질문을 올릴 때만** 답합니다.
+"이런 앱을 만들고 싶어"에서 출발해 요구·기술·설계 문서를 정리하고, 작업을 나누고, 검증 기준을 세운 뒤
+**그 기준을 실제로 통과할 때까지 구현·검증·복구를 스스로 이어 갑니다.**
+사람은 시작 전에 목적·권한·예산을 정하고, 화면 제품이면 디자인을 고릅니다. Loop가 시작되면 질문 없이 끝까지 갑니다.
 
 ```mermaid
-flowchart TD
-    A["PRD → TRD → Architecture → Master Plan"]
-    
-    A --> B["Phase"]
-    B --> C["Task"]
-    C --> D["Implement"]
-    D --> E{"Verify"}
-
-    E -->|FAIL| F["Fix"]
-    F --> E
-
-    E -->|PASS| G{"More Tasks?"}
-
-    G -->|YES| C
-    G -->|NO| H["Phase Complete"]
-
-    H --> I{"Next Phase?"}
-
-    I -->|YES| B
-    I -->|NO| J["Project Complete"]
-
-    classDef process fill:#e8f4ff,stroke:#1976d2,stroke-width:1.5px,color:#0d47a1;
-    classDef decision fill:#fff8e1,stroke:#f9a825,stroke-width:1.5px,color:#5d4037;
-    classDef complete fill:#e8f5e9,stroke:#43a047,stroke-width:1.5px,color:#1b5e20;
-
-    class A,B,C,D,F process;
-    class E,G,I decision;
-    class H,J complete;
+flowchart LR
+    A["합의<br/>목적·권한·예산·모델"] --> B["문서<br/>IDEA → PRD → TRD → Architecture"]
+    B --> C["계획·하네스<br/>Plan → Harness"]
+    C --> D["Loop<br/>구현(병렬)"]
+    D --> E{"lint → unit → e2e"}
+    E -->|FAIL| D
+    E -->|PASS| F{"독립 검증<br/>다른 세션"}
+    F -->|FAIL| D
+    F -->|PASS| G["완료 보고"]
 ```
 
-## 무엇이 다른가
+- **완료는 증거로 판정합니다.** `lint → unit → e2e → task_validation` 순서로 판정하고, 마지막 판정은 그 코드를 만들지 않은 별도 세션이 실제로 실행해 내립니다.
+- **질문은 앞에서 한 번에 합니다.** 목적·권한·예산·금지 사항, 쓸 모델과 사용량 한도에 걸렸을 때의 처리를 Loop 전에 정합니다.
+- **막히면 사람을 기다리지 않고 전략을 바꿉니다.** 같은 방식의 수정이 3번 안에 풀리지 않으면 원인을 다시 분석해 다른 방법을 씁니다. 끝내 안 되면 변경과 증거를 남기고 미완료로 정직하게 보고합니다.
+- **독립 작업은 병렬로 합니다.** 워커 수는 작업의 독립성과 자원을 보고 에이전트가 정합니다. [Orca](docs/loop.md#orca에서-병렬로-돌리기)가 있으면 워크트리 워커로 나눠 돌립니다.
+- **완료 뒤에도 이어집니다.** 기능 추가·버그 수정·리팩토링, 문서 없는 기존 코드를 이 흐름에 올리는 스킬이 있습니다.
 
-- **대화가 아니라 파일이 입력입니다.** 각 단계는 앞 단계의 문서만 읽습니다. 세션이 끊겨도 문서만 있으면 이어집니다.
-- **구현한 세션이 스스로 합격 판정을 내리지 않습니다.** 마지막 검증(task_validation)은 구현 과정을 모르는 **다른 세션**이 실행 중인 앱을 직접 조작해 판정합니다.
-- **실패하면 고치기 전에 원인부터 분류합니다.** 코드 결함·낡은 테스트·환경 문제·흔들리는 테스트를 구별하고, 코드 수정은 3회까지입니다. 소진하면 기준을 낮추지 않고 멈춰 사람에게 묻습니다.
-- **병렬로 돌고, 사람을 부르는 지점이 정해져 있습니다.** 태스크 의존 그래프(DAG)로 동시에 할 수 있는 태스크를 워크트리별로 나눠 돌리고, 멈추는 조건은 "답이 필요한 질문"과 "전부 완료" 둘뿐입니다.
-- **완료 뒤에도 이어집니다.** 기능 추가·버그 수정·리팩토링, 그리고 문서 없이 만든 코드를 이 흐름에 올리는 스킬이 있습니다.
+## 2.0에서 달라진 점
+
+1.x는 실제 프로젝트에 적용하면서 문제가 생길 때마다 규칙과 예외 처리를 더해 다듬었습니다. 규칙이 쌓일수록 지시문은 길어졌고, 에이전트는 절차를 따르는 데 집중하느라 오히려 상황 판단이 줄었습니다.
+
+2.0은 최근의 에이전트 스킬·프롬프트 작성 권고에 맞춰 다시 썼습니다. 지시는 짧게 쓰고, 목적과 반드시 지킬 제약만 분명히 하고, 방법은 모델에 맡기는 방식입니다. 그래서 **큰 흐름과 꼭 지킬 것만 정하고, 나머지는 에이전트가 프로젝트에 맞게 판단합니다.** 꼭 지킬 것은 검증 순서, 구현과 분리된 검증, 시작 전 합의입니다.
+
+| | 1.x (1.15.5) | 2.0 |
+|---|---|---|
+| 스킬 지시문 분량 | 9,699줄 | 1,603줄 (약 83% 감소) |
+| 진행 방식 | 단계마다 검토, 루프 중 질문은 답할 때까지 대기 | 미리 승인한 범위는 연속 진행, Loop 후 질문 없음 |
+| 실패 처리 | 3회 실패하면 멈추고 사람에게 질문 | 3회 안에 원인 분석·새 전략, 끝내 막히면 정직한 미완료 |
+| 실행 구조 | 프로젝트마다 구동·감시 스크립트 생성 | Claude Code·Codex·Orca 기능을 그대로 사용 |
+| 화면 디자인 | 정해진 자리 없음 | 구현 전에 실제 미리보기를 보고 사용자가 선택 |
+
+같은 과제로 비교했을 때 2.0은 1.x보다 빨리 끝났고 토큰도 크게 덜 썼습니다. 자세한 내용은 [변경 기록](CHANGELOG.md#200)에 있습니다.
+
+에이전트 개발 환경과 모델은 빠르게 바뀝니다. 이 플러그인도 모델과 호스트(Claude Code·Codex·Orca)의 변화에 맞춰 계속 업데이트할 예정입니다. 모델이 좋아질수록 지시는 더 줄이고 자율은 더 넓히는 방향입니다.
 
 ## 설치
 
-```
+```text
+# Claude Code
 /plugin marketplace add GangJaeYu/harness_loop_full_korean
-/plugin install harness-loop-fullstack@harness-loop-fullstack
+/plugin install harness-loop-fullstack-kor@harness-loop-fullstack-kor
 ```
-
-버전을 고정하려면 `GangJaeYu/harness_loop_full_korean@v1.15.5` 처럼 붙입니다.
-
-코덱스:
 
 ```bash
+# Codex
 codex plugin marketplace add GangJaeYu/harness_loop_full_korean
-codex plugin add harness-loop-fullstack@harness-loop-fullstack
+codex plugin add harness-loop-fullstack-kor@harness-loop-fullstack-kor
 ```
 
-플러그인 없이 쓰는 방법은 [시작하기](docs/getting-started.md)를 보세요.
+버전을 고정하려면 `GangJaeYu/harness_loop_full_korean@v2.0.0`처럼 붙입니다.
+**1.x(`harness-loop-fullstack`)를 쓰고 있었다면** 2.0에서 플러그인 이름이 바뀌었으니 [시작하기](docs/getting-started.md#1x에서-옮기기)를 따라 바꿔 설치하세요.
 
-**필요한 것**: git 저장소, Claude Code(또는 Codex) CLI. 루프 단계에서는 프로젝트 스택에 따라 **Docker**(DB 등 의존 서비스), **Node·Playwright**(e2e) 가 필요하고,
-Windows 에서는 PowerShell 7(`pwsh`)을 권장합니다. 병렬 운용에 [Orca](docs/loop.md#구동기--세션을-누가-여는가)(ADE)를 쓸 수 있지만 없어도 됩니다.
+**필요한 것:** git, Claude Code 또는 Codex CLI. 나머지 도구(Docker, 브라우저 테스트, WSL, Orca 등)는 프로젝트에 필요할 때 에이전트가 확인하고, 없으면 Loop 전에 알려 줍니다.
 
 ## 빠르게 시작하기
 
-빈 폴더에서 `git init` 하고 에이전트를 연 뒤, 순서대로 말하면 됩니다. 각 단계가 끝나면 스킬이 보고하고 멈추므로 검토하고 다음으로 넘어갑니다.
+```text
+이런 앱을 만들고 싶어: (설명). 환경을 확인하고 필요한 것을 먼저 물은 뒤 구현과 검증까지 진행해줘.
+```
 
-1. **"이런 앱 아이디어가 있는데 정리해줘"** → `docs/IDEA.md`
-2. **"PRD 써줘"** → **"TRD 써줘"** → **"아키텍처 설계해줘"** → 요구사항·기술·설계 문서
-3. **"개발 계획 세워줘"** → `plan_setup/` (phase·task·STATE·LOG)
-4. **"하네스 세팅해줘"** → 게이트 정의서와 로컬 개발 환경 스크립트
-5. **"개발 루프 세팅해줘"** → `loop_setup/LOOP.md` · 실행 순서 그림 `DAG.md` · 구동 스크립트
-6. **"첫 사이클 시작하자"** → 이후로는 루프가 돌고, 질문이 오면 `plan_setup/STATE.md` 에 답을 적습니다
+- 기본은 단계마다 결과와 다음 스킬을 **제안받고 승인**하는 방식입니다.
+- "루프까지 묻지 말고 진행해"처럼 이후 단계를 권한·예산과 함께 미리 승인하면, 그 범위는 연속으로 진행합니다.
+- 원하는 단계가 분명하면 **스킬 이름을 직접 부르는 것이 가장 확실합니다.**
 
-이미 PRD 가 있으면 그다음 단계부터 시작하면 됩니다. **결과물이 어떻게 생겼는지는 [예시 프로젝트](examples/deskwork/)** 에서 볼 수 있습니다.
+```text
+/harness-loop-fullstack-kor:prd-generator 이 아이디어로 PRD 써줘      # Claude Code
+$bug-fix 검색에서 소문자로 찾으면 결과가 빠져                          # Codex
+```
 
 ## 스킬 한눈에
 
-| 이럴 때 이렇게 말하면 | 스킬 | 만들어지는 것 |
+| 이럴 때 | 스킬 | 만들어지는 것 |
 |---|---|---|
-| "앱 하나 만들고 싶은데 막연해" | `idea-brainstorm` | `docs/IDEA.md` |
-| "PRD 써줘" | `prd-generator` | `docs/PRD.md` — 요구사항마다 ID 와 관찰 가능한 수용 기준 |
-| "기술 스택 정해줘" | `trd-generator` | `docs/TRD.md` — 결정 단위(TD)와 근거·되돌리기 비용 |
-| "아키텍처 설계해줘" | `architecture-generator` | `docs/ARCHITECTURE/*.md` — 앞 문서와 충돌하면 숨기지 않고 드러내고, 고르시면 PRD·TRD 까지 고쳐 이어 감 |
-| "개발 계획 세워줘" | `plan-generator` | `plan_setup/` — phase·task(frontmatter)·STATE·LOG |
-| "하네스 세팅해줘" | `harness-setup` | `harness_setup/` — lint·unit·e2e·task_validation 정의서, `local-dev` |
-| "Redis 붙였으니 하네스 고쳐줘" | `harness-update` | 기존 하네스 갱신 (보통 루프가 스스로 부름) |
-| "개발 루프 세팅해줘" | `loop-setup` | `loop_setup/LOOP.md`·`DAG.md`, 구동 스크립트 |
-| "루프가 자꾸 같은 데서 멈춰" | `loop-update` | 기존 LOOP.md 갱신 |
-| "문서 없는 이 코드를 정리해줘" | `code-to-docs` | 현재 코드 기준 문서·테스트 phase·하네스·루프 |
-| "리팩토링하자" | `refactor-plan` | 문서 후미 절 + 리팩토링 phase |
-| "xx 기능 추가하려는데" | `feature-add` | 문서 후미 절 + 기능 phase |
-| "다 만든 앱에서 xx 가 안 돼" | `bug-fix` | 재현 기록 → 회귀 검사 → 수정 → 커밋 1회 |
+| 아이디어가 아직 막연하다 | `idea-brainstorm` | `docs/IDEA.md` |
+| 요구와 완료 기준을 정한다(화면이면 디자인 선택까지) | `prd-generator` | `docs/PRD.md`, 디자인 정본 |
+| 기술을 정한다 | `trd-generator` | `docs/TRD.md` |
+| 구조와 흐름을 설계한다 | `architecture-generator` | `docs/ARCHITECTURE/` |
+| 작업을 나눈다 | `plan-generator` | `plan_setup/` |
+| 검증 수단과 로컬 환경을 준비·갱신한다 | `harness-setup` · `harness-update` | `harness_setup/` |
+| 자율 실행을 준비·조정한다 | `loop-setup` · `loop-update` | `loop_setup/LOOP.md` |
+| 문서 없는 코드를 정리한다 | `code-to-docs` | 현재 코드 기준 문서 |
+| 기능을 추가한다 / 버그를 고친다 / 리팩토링한다 | `feature-add` · `bug-fix` · `refactor-plan` | 영향 범위의 문서·계획·수정·검증 |
 
-스킬별 자세한 설명과 예시는 [스킬 안내](docs/skills.md)에 있습니다.
+자세한 설명은 [스킬 안내](docs/skills.md)에 있습니다.
 
-## 루프가 도는 동안
+## 알아 둘 점
 
-- **시작**: 루프 세팅이 끝나면 `LOOP.md` 에 적힌 구동 명령으로 구동 스크립트를 띄웁니다. 스크립트가 태스크마다 새 세션을 열고, phase 가 바뀌어도 알아서 이어 갑니다.
-- **질문에 답하기**: Orca 모드에서는 질문이 생기면 **답하기 탭**이 떠서 그 자리에서 답하고 멈춘 루프를 다시 띄웁니다. 그 밖에는 `plan_setup/STATE.md`(병렬이면 코디네이터 워크트리의 것)의 `Next Action` 에 있는 `질문:` 아래에 `답:` 줄을 적고 구동 명령을 다시 실행합니다.
-- **지켜보기**: Orca 모드에서는 **상태판**(`loop-status`)으로 봅니다 — 구동 스크립트가 살아 있는지, 지금 판단 중인지, 슬롯마다 어느 태스크가 어디까지 왔는지, 사람에게 걸린 질문이 한 화면에 10초마다 다시 그려집니다. 구동 명령을 친 터미널에 바로 뜨고, 읽기만 하므로 아무 터미널에서나 띄우고 닫아도 됩니다(Orca 사이드바에는 구동 스크립트와 판단 세션이 나오지 않습니다). 기록은 `STATE.md`·`LOG.md`, 검증까지 끝난 결과만 기본 브랜치(`main`)에 들어옵니다.
-- **알림**: Orca 모드에서는 루프가 진행할 수 있는데 멈추면(잠든 워커, 죽은 스크립트, 사람의 답을 기다리는 워커, 새 질문) OS 알림으로 알려 주고, 태스크·phase 가 완료될 때도 한 번씩 알려 줍니다. 완료 소식이 한동안 없으면 상태판을 보세요.
-
-운용과 문제 해결은 [운용 가이드](docs/operations.md)에 있습니다.
-
-## 비용과 한계 (솔직하게)
-
-- **토큰과 시간이 많이 듭니다.** 태스크마다 구현·검증 세션이 따로 열리고 게이트를 여러 번 돌리는 구조라서입니다.
-  실사용 프로젝트(웹 ERP, 태스크 76개, 코드 약 6만 줄)는 9일 동안 입력 토큰 약 17.7억(대부분 캐시 읽기)을 썼습니다.
-  그 기록을 분석해 1.10.0 에서 가장 큰 낭비(상주 코디네이터, 전체의 약 30%)를 걷어냈지만, **개선 후 실제 프로젝트로 다시 재지는 않았습니다.**
-- **실사용 검증은 아직 한 프로젝트뿐입니다.** 다른 스택·환경에서의 사례를 기다리고 있습니다.
-- **코덱스는 설치와 스킬 인식까지 확인했지만**(Codex CLI 0.156.1), 코덱스로 루프 전체를 돌려 보지는 않았습니다. 실사용 프로젝트는 클로드 코드로 진행했습니다.
-- 구동 스크립트는 프로젝트마다 에이전트가 새로 작성합니다. **첫 구동 전에 루프 세팅이 안내하는 시험 실행(스모크 테스트)을 꼭 돌리세요.**
-- 작은 스크립트 한 개짜리 작업에는 과합니다. 여러 화면·여러 phase 가 있는 웹 애플리케이션을 전제로 만들었습니다.
+- **작은 일에는 가볍게 씁니다.** 문서만 원하거나 작은 수정이면 전체 흐름을 강제하지 않습니다. 다만 Loop로 완성까지 가는 일은 단일 프롬프트보다 시간과 토큰이 더 듭니다. 검증을 실제로 돌리기 때문입니다.
+- **부모(조정) 세션이 끊기면 멈춥니다.** 자동으로 되살리지 않습니다. 다시 부르면 기록과 실제 상태를 확인해 이어 갑니다.
+- **Orca로 띄운 Claude 워커는 권한 확인 없이 실행됩니다.** Orca의 동작 방식입니다. 허용 범위는 Loop 전 합의에 분명히 적어 두세요.
+- Claude Code와 Codex 양쪽에서 아이디어부터 Loop 완료까지의 흐름을 확인했습니다. 화면·DB가 있는 큰 제품의 장시간 Loop는 아직 사례가 적습니다.
 
 ## 문서
 
 | 문서 | 내용 |
 |---|---|
-| [시작하기](docs/getting-started.md) | 요구사항, 설치(클로드 코드·코덱스·플러그인 없이), 첫 프로젝트 따라 하기 |
-| [스킬 안내](docs/skills.md) | 스킬 13개의 용도·산출물·예시 |
-| [검증 하네스](docs/harness.md) | 게이트 4개, 활성 시점, 분리 검증, `local-dev` |
-| [개발 루프](docs/loop.md) | 한 태스크의 흐름, 실패 분류, 구동기, 병렬과 격리, phase 완료 |
-| [운용 가이드](docs/operations.md) | 루프 시작·멈춤·재개, 질문에 답하기, 문제 해결 |
-| [용어집](docs/glossary.md) | 코디네이터, 슬롯, 게이트, 활성 시점 … |
-| [예시 프로젝트](examples/deskwork/) | 스킬을 순서대로 실행해 나온 실제 산출물 |
+| [시작하기](docs/getting-started.md) | 설치, 1.x에서 옮기기, 플러그인 없이 쓰기, 첫 프로젝트 |
+| [스킬 안내](docs/skills.md) | 스킬 13개의 용도·산출물·다음 단계 |
+| [진행 방식](docs/workflow.md) | 합의, 단계 승인, 디자인 선택, 문서가 바뀔 때 |
+| [검증 하네스](docs/harness.md) | 네 게이트, 독립 검증, 다른 OS 검증 |
+| [개발 루프](docs/loop.md) | 병렬과 Orca, 실패와 전략 전환, 중단과 재개, 모델과 한도 |
 | [변경 기록](CHANGELOG.md) | 버전별 변경 |
 
 ## 라이선스

@@ -1,57 +1,39 @@
-# 하네스 + 루프 풀스택 스킬 — 에이전트 색인
+# 하네스 + 루프 풀스택 — 스킬 색인
 
-> **플러그인으로 설치했다면 이 파일은 없어도 된다.** 코덱스가 `skills/` 를 직접 찾는다.
-> 이 색인은 저장소를 **서브모듈이나 clone 으로 프로젝트에 넣어 쓸 때**의 진입로다.
+> 플러그인으로 설치했다면 이 파일은 필요 없다. 저장소를 서브모듈이나 clone으로 프로젝트에 넣어 쓸 때의 색인이다.
 
-이 저장소는 **프로젝트를 설계하고 구현하는 절차**를 레이어별 스킬로 나눠 담고 있다.
-아래 조건에 해당하면 **그 스킬의 `SKILL.md` 를 전문 읽고 그대로 따른다.** 요약본으로 대체하지 않는다.
-
-각 `SKILL.md` 끝에 환경별 안내가 있다 — **Codex에서 돌고 있으면 그 스킬의 `references/codex.md` 를 함께 읽는다.**
-선택지를 묻는 방법, 파일 쓰는 방법, 다음 단계를 남기는 방법이 거기 있다.
-
-## 언제 무엇을 읽는가
-
-| 사용자가 이렇게 말하면 | 읽을 것 | 만들어지는 것 |
+Claude Code와 Codex에서 요구를 구체화하고 구현·검증까지 자율 진행하는 한국어 스킬 13개다.
+사용자 명시 지시가 스킬보다 우선한다.
+| 요청 | 읽을 스킬 | 주요 산출물 |
 |---|---|---|
-| "아이디어가 있는데 정리해줘", "이런 서비스 어때?", 아이디어가 아직 모호할 때 | `skills/idea-brainstorm/SKILL.md` | `docs/IDEA.md` |
-| "PRD 만들어줘", "요구사항 정리해줘", "뭘 만들 건지 문서로" | `skills/prd-generator/SKILL.md` | `docs/PRD.md` |
-| "TRD 만들어줘", "기술 스택 정하자", "어떤 기술로 만들지" | `skills/trd-generator/SKILL.md` | `docs/TRD.md` |
-| "아키텍처 설계해줘", "구조 잡아줘" | `skills/architecture-generator/SKILL.md` | `docs/ARCHITECTURE/*.md` |
-| "개발 계획 세워줘", "태스크로 쪼개줘", "마스터 플랜" | `skills/plan-generator/SKILL.md` | `plan_setup/PLAN.md`·`phase-NN/`·`STATE.md`·`LOG.md` |
-| "하네스 세팅해줘", "품질 게이트", "테스트 파이프라인", "로컬 개발 환경" | `skills/harness-setup/SKILL.md` | `harness_setup/quality_gates/`·`scripts/` |
-| "하네스 업데이트해줘", "게이트 갱신", "Redis 추가됐어" | `skills/harness-update/SKILL.md` | (기존 `harness_setup/` 갱신) |
-| "개발 루프 세팅해줘", "이제 구현 시작하자", "태스크 순서 정해줘" | `skills/loop-setup/SKILL.md` | `loop_setup/LOOP.md`·`DAG.md`, 구동 스크립트 |
-| "루프 업데이트해줘", "병렬 폭 바꾸자", "루프가 자꾸 같은 데서 멈춰" | `skills/loop-update/SKILL.md` | (기존 `LOOP.md` 갱신) |
-| 문서 없이 만든 코드를 이 절차에 올리고 싶을 때, "이 코드 문서화해줘" | `skills/code-to-docs/SKILL.md` | as-is `docs/`·phase-01 현행 고정·하네스·루프 |
-| 완료된 프로젝트에서 "리팩토링하자", "라이브러리 올리자" | `skills/refactor-plan/SKILL.md` | 후미 `## 리팩토링 N` 절·`phase-NN-refactor-*` |
-| 완료된 프로젝트에서 "xx 기능 추가하려는데" | `skills/feature-add/SKILL.md` | 후미 `## 추가 N` 절·`phase-NN-<기능>` |
-| 완료된 프로젝트를 쓰다가 "xx 가 안 돼" (루프 중 게이트 실패는 아님) | `skills/bug-fix/SKILL.md` | 회귀 검사·`LOG.md` `### BUG-NN`·커밋 1회 |
+| 아이디어 구체화 | skills/idea-brainstorm/SKILL.md | docs/IDEA.md |
+| 요구와 완료 기준·시각 디자인 확정 | skills/prd-generator/SKILL.md | docs/PRD.md · 화면 제품의 디자인 정본 |
+| 기술 결정 | skills/trd-generator/SKILL.md | docs/TRD.md |
+| 구조·흐름 | skills/architecture-generator/SKILL.md | docs/ARCHITECTURE/ |
+| 기능 단위 계획 | skills/plan-generator/SKILL.md | plan_setup/ |
+| 검증·로컬 환경 준비/갱신 | skills/harness-setup/SKILL.md · skills/harness-update/SKILL.md | harness_setup/ |
+| 자율 실행 준비/운용 조정 | skills/loop-setup/SKILL.md · skills/loop-update/SKILL.md | loop_setup/LOOP.md |
+| 기존 코드 문서화 | skills/code-to-docs/SKILL.md | 선택 범위의 현행 문서 |
+| 행위 보존 리팩토링 | skills/refactor-plan/SKILL.md | 필요한 변경 계획 |
+| 기능 추가 | skills/feature-add/SKILL.md | 영향 있는 요구·설계·계획 |
+| 버그 수정 | skills/bug-fix/SKILL.md | 수정·회귀 검사·기록 |
 
-## 순서가 있다
+선택한 스킬을 읽는다. 관련 없는 스킬과 참고 문서를 한꺼번에 읽지 않는다.
+IDEA → PRD → TRD → Architecture → Plan → Harness → Loop 순으로 필요한 결정을 구체화한다.
+단계를 마치면 다음 스킬로 이어간다. 사용자가 그 단계 이후 진행을 명시적으로 승인하지 않았으면 결과와 다음 스킬을 제안해 승인을 받는다. Loop 시작 후에는 합의 안에서 자율 진행한다.
+뒤 단계에서 결정이 바뀌면 영향받는 앞 문서(IDEA 포함)의 해당 부분만 갱신하고 근거를 남긴다. 범위·수용 기준 변경은 사용자에게 묻는다.
+화면 제품은 PRD 이후 본격적인 화면 구현·관련 Loop 전에 실제 미리보기를 제시해 사용자에게 디자인 최종 결정을 받는다.
+승인 근거·버전·범위·시각 품질 기준은 docs/DESIGN.md 또는 기존 동등 문서에 보존하며 확인된 승인 범위와 시각 보존 수정은 재승인하지 않는다.
+이미 정해진 것은 재사용하고 작은 프로젝트는 문서를 간결하게 쓴다.
+문서화·버그 수정에 전체 파이프라인을 강제하지 않는다.
 
-```
-IDEA → PRD → TRD → ARCHITECTURE → PLAN(phase·task) → HARNESS(게이트·스크립트) → LOOP(실행 규칙)
-                                                                                    ↓
-                                          태스크를 DAG 순서로 병렬 구현 → 게이트 4단계 → 분리 검증 → 완료
-```
-
-**각 레이어는 앞 레이어의 '파일'만 입력으로 받는다.** 대화 맥락에 의존하지 않으므로,
-세션이 끊겨도 문서만 있으면 이어서 진행할 수 있다. 앞 문서가 없으면 그 레이어부터 하자고 제안한다.
-
-**레이어를 건너뛰지 않는다.** 뒤 레이어의 결정을 앞에서 미리 확정하면
-(PRD에 기술 스택을 적는 등) 뒤 레이어가 그것을 검토 대상이 아니라 기정사실로 읽는다.
-
-## 구현을 시작한 뒤
-
-`loop_setup/LOOP.md` 가 만들어졌으면 **그 뒤로는 이 색인이 아니라 `LOOP.md` 가 안내한다.**
-세션을 열 때 `LOOP.md` 와 `plan_setup/STATE.md` 를 읽고 거기 적힌 사이클을 따른다.
-구동 스크립트가 지시문으로 토막(구현·검증·반영·코디네이터)을 지정했으면 그 지시문이 먼저다. 검증 토막은 받은 지시문만 따른다.
-
-`LOOP.md` 가 정한 것 중 특히 지킬 것 넷이다.
-
-- **재수정 사이클은 최대 3회.** 소진하면 스스로 기준을 낮추지 말고 사용자에게 보고하고 멈춘다
-- **한 태스크에 한 세션.** 그리고 `task_validation` 은 **구현한 세션과 다른 세션**에서 돈다 —
-  같은 세션이 구현하고 판정하면 그 게이트는 이름만 남는다
-- **게이트 실패는 고치기 전에 분류한다.** 진짜 결함만 코드를 고치고, 나머지는 하네스나 태스크 문서로 간다
-- **병렬에서 문서는 코디네이터만 쓴다.** 워커는 `STATE.md`·`LOG.md`·태스크 문서·하네스 문서를 쓰지 않고
-  코디네이터 트리에서 읽기만 하며, 기록할 것은 출력 블록으로 넘긴다
+Loop 전에 환경·프로젝트를 조사하고 목적·권한·예산·금지 사항·실패 처리 원칙을 합의한다.
+실행 환경은 Orca / 일반 / Others에서 기존 선택을 이어받고 필요한 도구·권한·독립 검증 경로를 미리 준비한다.
+제품 Loop는 네 게이트 순서와 별도 세션 task_validation을 유지한다. 독립 작업은 자원·충돌 조건 안에서 병렬로 진행한다.
+같은 방식의 수정 3회 안에 풀리지 않으면 자율 분석·새 전략으로 전환하며 누적 이력과 전체 예산을 초기화하지 않는다.
+Loop 이후 합의 안에서 질문·수동 조작 없이 구현·검증·복구·최종 보고까지 진행한다.
+새 세션은 loop_setup/LOOP.md와 plan_setup/STATE.md에서 합의와 재개 지점을 이어받는다.
+부모(조정) 세션이 끊기면 자동으로 이어 가지 않고 멈춘다. Loop 전에 역할별 기본 모델과 사용량 한도 도달 시 처리를 합의한다.
+중요한 전환·분석·검증과 채택 증거를 저장해 원 대화 없이 실제 변경과 대조해 재개한다.
+권한을 우회하거나 검증 기준을 몰래 낮추지 않는다.
+복구 불가능하면 변경·증거·재개 지점을 보존한 미완료 결과를 낸다. 질문 대기로 끝내지 않는다.
